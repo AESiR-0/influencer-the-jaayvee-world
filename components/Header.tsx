@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebaseClient';
-import { Button } from '@/ui/button';
-import { LogOut, User } from 'lucide-react';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebaseClient";
+import { Button } from "@/ui/button";
+import { LogOut, User } from "lucide-react";
 
 export default function Header() {
   const [isLoading, setIsLoading] = useState(false);
@@ -14,9 +14,9 @@ export default function Header() {
     setIsLoading(true);
     try {
       await auth.signOut();
-      router.push('/login');
+      router.push("/login");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -29,12 +29,12 @@ export default function Header() {
           <h1 className="text-xl font-bold text-fg">The Jaayvee World</h1>
           <span className="text-sm text-muted">Influencers Dashboard</span>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push('/profile')}
+            onClick={() => router.push("/profile")}
           >
             <User className="h-4 w-4 mr-2" />
             Profile
@@ -46,7 +46,7 @@ export default function Header() {
             disabled={isLoading}
           >
             <LogOut className="h-4 w-4 mr-2" />
-            {isLoading ? 'Logging out...' : 'Logout'}
+            {isLoading ? "Logging out..." : "Logout"}
           </Button>
         </div>
       </div>

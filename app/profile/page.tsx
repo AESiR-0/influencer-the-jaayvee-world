@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebaseClient';
-import { api } from '@/lib/api';
-import Header from '@/components/Header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/ui/card';
-import { Button } from '@/ui/button';
-import { User, Wallet, Star, Users, ExternalLink, Copy } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebaseClient";
+import { api } from "@/lib/api";
+import Header from "@/components/Header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Button } from "@/ui/button";
+import { User, Wallet, Star, Users, ExternalLink, Copy } from "lucide-react";
 
 interface ProfileData {
   handle: string;
@@ -33,23 +33,23 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!auth || !auth.currentUser) {
-        router.push('/login');
+        router.push("/login");
         return;
       }
 
       try {
         setIsLoading(true);
         const userId = auth.currentUser.uid;
-        
+
         const [profileData, walletData] = await Promise.all([
           api.getProfile(userId),
-          api.getWallet(userId)
+          api.getWallet(userId),
         ]);
 
         setProfile(profileData);
         setWallet(walletData);
       } catch (error) {
-        console.error('Failed to fetch profile data:', error);
+        console.error("Failed to fetch profile data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -60,31 +60,31 @@ export default function ProfilePage() {
 
   const getTierColor = (tier: string) => {
     switch (tier?.toLowerCase()) {
-      case 'bronze':
-        return 'bg-amber-100 text-amber-800';
-      case 'silver':
-        return 'bg-gray-100 text-gray-800';
-      case 'gold':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'platinum':
-        return 'bg-purple-100 text-purple-800';
+      case "bronze":
+        return "bg-amber-100 text-amber-800";
+      case "silver":
+        return "bg-gray-100 text-gray-800";
+      case "gold":
+        return "bg-yellow-100 text-yellow-800";
+      case "platinum":
+        return "bg-purple-100 text-purple-800";
       default:
-        return 'bg-accent-light text-accent';
+        return "bg-accent-light text-accent";
     }
   };
 
   const getTierIcon = (tier: string) => {
     switch (tier?.toLowerCase()) {
-      case 'bronze':
-        return '🥉';
-      case 'silver':
-        return '🥈';
-      case 'gold':
-        return '🥇';
-      case 'platinum':
-        return '💎';
+      case "bronze":
+        return "🥉";
+      case "silver":
+        return "🥈";
+      case "gold":
+        return "🥇";
+      case "platinum":
+        return "💎";
       default:
-        return '⭐';
+        return "⭐";
     }
   };
 
@@ -105,11 +105,13 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-bg">
       <Header />
-      
+
       <main className="container mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-fg mb-2">Profile</h1>
-          <p className="text-muted">Manage your influencer account and wallet</p>
+          <p className="text-muted">
+            Manage your influencer account and wallet
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -129,7 +131,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-fg">
-                      @{profile?.handle || 'influencer'}
+                      @{profile?.handle || "influencer"}
                     </h3>
                     <p className="text-muted">{profile?.email}</p>
                     {profile?.phone && (
@@ -142,10 +144,12 @@ export default function ProfilePage() {
                   <div className="p-4 bg-accent-light rounded-xl">
                     <div className="flex items-center space-x-2 mb-2">
                       <Users className="h-4 w-4 text-accent" />
-                      <span className="text-sm font-medium text-fg">Followers</span>
+                      <span className="text-sm font-medium text-fg">
+                        Followers
+                      </span>
                     </div>
                     <p className="text-2xl font-bold text-accent">
-                      {profile?.followers?.toLocaleString() || '0'}
+                      {profile?.followers?.toLocaleString() || "0"}
                     </p>
                   </div>
 
@@ -155,9 +159,13 @@ export default function ProfilePage() {
                       <span className="text-sm font-medium text-fg">Tier</span>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <span className="text-2xl">{getTierIcon(profile?.tier || '')}</span>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getTierColor(profile?.tier || '')}`}>
-                        {profile?.tier || 'Bronze'}
+                      <span className="text-2xl">
+                        {getTierIcon(profile?.tier || "")}
+                      </span>
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${getTierColor(profile?.tier || "")}`}
+                      >
+                        {profile?.tier || "Bronze"}
                       </span>
                     </div>
                   </div>
@@ -165,7 +173,10 @@ export default function ProfilePage() {
 
                 <div className="pt-4 border-t border-border">
                   <p className="text-sm text-muted">
-                    <strong>Member since:</strong> {new Date(profile?.joinedAt || Date.now()).toLocaleDateString()}
+                    <strong>Member since:</strong>{" "}
+                    {new Date(
+                      profile?.joinedAt || Date.now(),
+                    ).toLocaleDateString()}
                   </p>
                 </div>
               </CardContent>
@@ -203,10 +214,11 @@ export default function ProfilePage() {
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="mt-4 p-3 bg-accent-light rounded-lg">
                   <p className="text-sm text-accent">
-                    <strong>Next Tier:</strong> Keep growing your followers to unlock higher tiers and better benefits!
+                    <strong>Next Tier:</strong> Keep growing your followers to
+                    unlock higher tiers and better benefits!
                   </p>
                 </div>
               </CardContent>
@@ -225,7 +237,7 @@ export default function ProfilePage() {
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-fg mb-2">
-                    ₹{wallet?.balance?.toLocaleString() || '0'}
+                    ₹{wallet?.balance?.toLocaleString() || "0"}
                   </div>
                   <p className="text-sm text-muted">Available Balance</p>
                 </div>
@@ -234,20 +246,22 @@ export default function ProfilePage() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted">Total Earned</span>
                     <span className="font-medium text-fg">
-                      ₹{wallet?.totalEarned?.toLocaleString() || '0'}
+                      ₹{wallet?.totalEarned?.toLocaleString() || "0"}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted">Pending</span>
                     <span className="font-medium text-fg">
-                      ₹{wallet?.pendingAmount?.toLocaleString() || '0'}
+                      ₹{wallet?.pendingAmount?.toLocaleString() || "0"}
                     </span>
                   </div>
                 </div>
 
-                <Button 
+                <Button
                   className="w-full"
-                  onClick={() => window.open('https://wallet.thejaayveeworld.com', '_blank')}
+                  onClick={() =>
+                    window.open("https://wallet.thejaayveeworld.com", "_blank")
+                  }
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Open Jaayvee Wallet
@@ -261,26 +275,26 @@ export default function ProfilePage() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full justify-start"
-                  onClick={() => router.push('/campaigns')}
+                  onClick={() => router.push("/campaigns")}
                 >
                   <Copy className="h-4 w-4 mr-2" />
                   Manage Referral Codes
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full justify-start"
-                  onClick={() => router.push('/submissions')}
+                  onClick={() => router.push("/submissions")}
                 >
                   <User className="h-4 w-4 mr-2" />
                   Upload Proof
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full justify-start"
-                  onClick={() => router.push('/dashboard')}
+                  onClick={() => router.push("/dashboard")}
                 >
                   <Star className="h-4 w-4 mr-2" />
                   View Dashboard

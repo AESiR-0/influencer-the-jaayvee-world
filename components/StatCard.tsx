@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 
 interface StatCardProps {
   title: string;
@@ -7,7 +7,12 @@ interface StatCardProps {
   icon?: React.ReactNode;
 }
 
-export default function StatCard({ title, value, description, icon }: StatCardProps) {
+export default function StatCard({
+  title,
+  value,
+  description,
+  icon,
+}: StatCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

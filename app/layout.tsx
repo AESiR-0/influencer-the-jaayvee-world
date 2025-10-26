@@ -15,13 +15,26 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     default: "Jaayvee Influencers - Promote & Earn Cashback",
-    template: "%s | Jaayvee Influencers"
+    template: "%s | Jaayvee Influencers",
   },
-  description: "Join Jaayvee Influencers program and earn cashback by promoting merchants and events with proof uploads. Turn your social influence into earnings.",
+  description:
+    "Join Jaayvee Influencers program and earn cashback by promoting merchants and events with proof uploads. Turn your social influence into earnings.",
   keywords: [
-    "influencer program", "social media marketing", "cashback", "content creation", "Jaayvee influencers",
-    "influencer earnings", "social promotion", "content marketing", "influencer dashboard", "social influence",
-    "brand promotion", "influencer campaigns", "social media earnings", "content creator", "influencer network"
+    "influencer program",
+    "social media marketing",
+    "cashback",
+    "content creation",
+    "Jaayvee influencers",
+    "influencer earnings",
+    "social promotion",
+    "content marketing",
+    "influencer dashboard",
+    "social influence",
+    "brand promotion",
+    "influencer campaigns",
+    "social media earnings",
+    "content creator",
+    "influencer network",
   ],
   authors: [{ name: "Jaayvee Team", url: "https://thejaayveeworld.com" }],
   creator: "Jaayvee",
@@ -32,44 +45,46 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   openGraph: {
-    type: 'website',
-    locale: 'en_IN',
-    url: 'https://influencers.jaayvee.com',
-    siteName: 'Jaayvee Influencers',
-    title: 'Jaayvee Influencers - Promote & Earn Cashback',
-    description: 'Join Jaayvee Influencers program and earn cashback by promoting merchants and events with proof uploads. Turn your social influence into earnings.',
+    type: "website",
+    locale: "en_IN",
+    url: "https://influencers.jaayvee.com",
+    siteName: "Jaayvee Influencers",
+    title: "Jaayvee Influencers - Promote & Earn Cashback",
+    description:
+      "Join Jaayvee Influencers program and earn cashback by promoting merchants and events with proof uploads. Turn your social influence into earnings.",
     images: [
       {
-        url: '/static/logos/influencers/influencers_og.png',
+        url: "/static/logos/influencers/influencers_og.png",
         width: 1200,
         height: 630,
-        alt: 'Jaayvee Influencers - Promote & Earn Cashback',
+        alt: "Jaayvee Influencers - Promote & Earn Cashback",
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Jaayvee Influencers - Promote & Earn Cashback',
-    description: 'Join Jaayvee Influencers program and earn cashback by promoting merchants and events with proof uploads. Turn your social influence into earnings.',
-    images: ['/static/logos/influencers/influencers_twitter.png'],
-    creator: '@jaayvee',
+    card: "summary_large_image",
+    title: "Jaayvee Influencers - Promote & Earn Cashback",
+    description:
+      "Join Jaayvee Influencers program and earn cashback by promoting merchants and events with proof uploads. Turn your social influence into earnings.",
+    images: ["/static/logos/influencers/influencers_twitter.png"],
+    creator: "@jaayvee",
   },
   icons: {
     icon: "/static/logos/influencers/influencers_fav.png",
     shortcut: "/static/logos/influencers/influencers_fav.png",
     apple: "/static/logos/influencers/influencers_fav.png",
   },
-  manifest: '/manifest.json',
+  manifest: "/manifest.json",
   alternates: {
-    canonical: 'https://influencers.jaayvee.com',
+    canonical: "https://influencers.jaayvee.com",
   },
-  category: 'entertainment',
+  category: "entertainment",
 };
 
 export default function RootLayout({
@@ -86,40 +101,41 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              "name": "Jaayvee Influencers",
-              "url": "https://influencers.jaayvee.com",
-              "logo": "https://influencers.jaayvee.com/static/logos/influencers/influencers_logo.png",
-              "description": "Join Jaayvee Influencers program and earn cashback by promoting merchants and events with proof uploads. Turn your social influence into earnings.",
-              "foundingDate": "2024",
-              "founders": [
+              name: "Jaayvee Influencers",
+              url: "https://influencers.jaayvee.com",
+              logo: "https://influencers.jaayvee.com/static/logos/influencers/influencers_logo.png",
+              description:
+                "Join Jaayvee Influencers program and earn cashback by promoting merchants and events with proof uploads. Turn your social influence into earnings.",
+              foundingDate: "2024",
+              founders: [
                 {
                   "@type": "Person",
-                  "name": "Jaayvee Team"
-                }
+                  name: "Jaayvee Team",
+                },
               ],
-              "contactPoint": {
+              contactPoint: {
                 "@type": "ContactPoint",
-                "telephone": "+91-XXXXXXXXXX",
-                "contactType": "customer service",
-                "availableLanguage": ["English", "Hindi"]
+                telephone: "+91-XXXXXXXXXX",
+                contactType: "customer service",
+                availableLanguage: ["English", "Hindi"],
               },
-              "sameAs": [
+              sameAs: [
                 "https://twitter.com/jaayvee",
                 "https://linkedin.com/company/jaayvee",
-                "https://instagram.com/jaayvee"
+                "https://instagram.com/jaayvee",
               ],
-              "address": {
+              address: {
                 "@type": "PostalAddress",
-                "addressCountry": "IN",
-                "addressRegion": "Maharashtra",
-                "addressLocality": "Mumbai"
+                addressCountry: "IN",
+                addressRegion: "Maharashtra",
+                addressLocality: "Mumbai",
               },
-              "serviceType": "Influencer Marketing Platform",
-              "areaServed": {
+              serviceType: "Influencer Marketing Platform",
+              areaServed: {
                 "@type": "Country",
-                "name": "India"
-              }
-            })
+                name: "India",
+              },
+            }),
           }}
         />
       </head>

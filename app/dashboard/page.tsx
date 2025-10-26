@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebaseClient';
-import { api } from '@/lib/api';
-import Header from '@/components/Header';
-import StatCard from '@/components/StatCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/ui/card';
-import { Button } from '@/ui/button';
-import { DollarSign, Clock, Share2, TrendingUp } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebaseClient";
+import { api } from "@/lib/api";
+import Header from "@/components/Header";
+import StatCard from "@/components/StatCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Button } from "@/ui/button";
+import { DollarSign, Clock, Share2, TrendingUp } from "lucide-react";
 
 interface Profile {
   handle?: string;
@@ -27,7 +27,7 @@ interface Referral {
 interface Submission {
   id?: string;
   amount?: number;
-  status?: 'pending' | 'approved' | 'rejected';
+  status?: "pending" | "approved" | "rejected";
   createdAt?: string;
 }
 
@@ -53,25 +53,25 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       if (!auth || !auth.currentUser) {
-        router.push('/login');
+        router.push("/login");
         return;
       }
 
       try {
         setIsLoading(true);
         const userId = auth.currentUser.uid;
-        
+
         const [profile, referral, submissions, wallet] = await Promise.all([
           api.getProfile(userId),
           api.getReferral(userId),
           api.getSubmissions(userId),
-          api.getWallet(userId)
+          api.getWallet(userId),
         ]);
 
         setData({ profile, referral, submissions, wallet });
       } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
-        setError('Failed to load dashboard data');
+        console.error("Failed to fetch dashboard data:", error);
+        setError("Failed to load dashboard data");
       } finally {
         setIsLoading(false);
       }
@@ -100,10 +100,10 @@ export default function DashboardPage() {
         <Header />
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <p className="text-red-500 mb-4">{error || 'Failed to load data'}</p>
-            <Button onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
+            <p className="text-red-500 mb-4">
+              {error || "Failed to load data"}
+            </p>
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
           </div>
         </div>
       </div>
@@ -111,23 +111,27 @@ export default function DashboardPage() {
   }
 
   const { profile, referral, submissions, wallet } = data;
-  
+
   // Calculate stats
   const totalCashback = submissions
-    .filter(s => s.status === 'approved')
+    .filter((s) => s.status === "approved")
     .reduce((sum, s) => sum + (s.amount || 0), 0);
-  
-  const pendingCount = submissions.filter(s => s.status === 'pending').length;
-  const approvedCount = submissions.filter(s => s.status === 'approved').length;
+
+  const pendingCount = submissions.filter((s) => s.status === "pending").length;
+  const approvedCount = submissions.filter(
+    (s) => s.status === "approved",
+  ).length;
 
   return (
     <div className="min-h-screen bg-bg">
       <Header />
-      
+
       <main className="container mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-fg mb-2">Dashboard</h1>
-          <p className="text-muted">Welcome back, {profile?.handle || 'Influencer'}!</p>
+          <p className="text-muted">
+            Welcome back, {profile?.handle || "Influencer"}!
+          </p>
         </div>
 
         {/* Stats Grid */}
@@ -165,9 +169,11 @@ export default function DashboardPage() {
               {referral?.code ? (
                 <div className="space-y-4">
                   <div className="p-3 bg-accent-light rounded-xl">
-                    <code className="text-accent font-mono text-lg">{referral.code}</code>
+                    <code className="text-accent font-mono text-lg">
+                      {referral.code}
+                    </code>
                   </div>
-                  <Button 
+                  <Button
                     onClick={() => navigator.clipboard.writeText(referral.code)}
                     className="w-full"
                   >
@@ -176,8 +182,10 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-muted mb-4">No referral code generated yet</p>
-                  <Button onClick={() => router.push('/campaigns')}>
+                  <p className="text-muted mb-4">
+                    No referral code generated yet
+                  </p>
+                  <Button onClick={() => router.push("/campaigns")}>
                     Generate Referral Code
                   </Button>
                 </div>
@@ -192,12 +200,12 @@ export default function DashboardPage() {
             <CardContent>
               <div className="text-center py-4">
                 <div className="text-3xl font-bold text-fg mb-2">
-                  ₹{wallet?.balance?.toLocaleString() || '0'}
+                  ₹{wallet?.balance?.toLocaleString() || "0"}
                 </div>
                 <p className="text-muted mb-4">Available balance</p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => router.push('/profile')}
+                <Button
+                  variant="outline"
+                  onClick={() => router.push("/profile")}
                 >
                   View Wallet
                 </Button>
@@ -215,30 +223,36 @@ export default function DashboardPage() {
             {submissions.length > 0 ? (
               <div className="space-y-4">
                 {submissions.slice(0, 3).map((submission, index) => (
-                  <div key={submission.id || `submission-${index}`} className="flex items-center justify-between p-4 border border-border rounded-xl">
+                  <div
+                    key={submission.id || `submission-${index}`}
+                    className="flex items-center justify-between p-4 border border-border rounded-xl"
+                  >
                     <div>
                       <p className="font-medium text-fg">
                         Submission #{submission.id || index + 1}
                       </p>
                       <p className="text-sm text-muted">
-                        Amount: ₹{submission.amount || '0'} • {submission.createdAt || 'Recently'}
+                        Amount: ₹{submission.amount || "0"} •{" "}
+                        {submission.createdAt || "Recently"}
                       </p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      submission.status === 'approved' 
-                        ? 'bg-green-100 text-green-800'
-                        : submission.status === 'rejected'
-                        ? 'bg-red-100 text-red-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {submission.status || 'pending'}
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        submission.status === "approved"
+                          ? "bg-green-100 text-green-800"
+                          : submission.status === "rejected"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {submission.status || "pending"}
                     </span>
                   </div>
                 ))}
                 {submissions.length > 3 && (
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => router.push('/submissions')}
+                  <Button
+                    variant="ghost"
+                    onClick={() => router.push("/submissions")}
                     className="w-full"
                   >
                     View All Submissions
@@ -248,7 +262,7 @@ export default function DashboardPage() {
             ) : (
               <div className="text-center py-8">
                 <p className="text-muted mb-4">No submissions yet</p>
-                <Button onClick={() => router.push('/submissions')}>
+                <Button onClick={() => router.push("/submissions")}>
                   Upload Your First Proof
                 </Button>
               </div>

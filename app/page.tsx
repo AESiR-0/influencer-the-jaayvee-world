@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebaseClient';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebaseClient";
 
 export default function Home() {
   const router = useRouter();
@@ -10,17 +10,19 @@ export default function Home() {
   useEffect(() => {
     // Check if user is already logged in
     if (!auth) {
-      router.push('/login');
+      router.push("/login");
       return;
     }
-    
-    const unsubscribe = auth.onAuthStateChanged((user: any) => {
-      if (user) {
-        router.push('/dashboard');
-      } else {
-        router.push('/login');
-      }
-    });
+
+    const unsubscribe = auth.onAuthStateChanged(
+      (user: firebase.User | null) => {
+        if (user) {
+          router.push("/dashboard");
+        } else {
+          router.push("/login");
+        }
+      },
+    );
 
     return () => unsubscribe();
   }, [router]);

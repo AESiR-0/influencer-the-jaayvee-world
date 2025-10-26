@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/firebaseClient';
-import { api } from '@/lib/api';
-import Header from '@/components/Header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/ui/card';
-import { Button } from '@/ui/button';
-import { Copy, Plus, ExternalLink, QrCode } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebaseClient";
+import { api } from "@/lib/api";
+import Header from "@/components/Header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Button } from "@/ui/button";
+import { Copy, Plus, ExternalLink, QrCode } from "lucide-react";
 
 interface ReferralData {
   code: string;
@@ -25,7 +25,7 @@ export default function CampaignsPage() {
   useEffect(() => {
     const fetchReferrals = async () => {
       if (!auth || !auth.currentUser) {
-        router.push('/login');
+        router.push("/login");
         return;
       }
 
@@ -34,7 +34,7 @@ export default function CampaignsPage() {
         const data = await api.getReferral(auth.currentUser.uid);
         setReferrals(Array.isArray(data) ? data : [data].filter(Boolean));
       } catch (error) {
-        console.error('Failed to fetch referrals:', error);
+        console.error("Failed to fetch referrals:", error);
       } finally {
         setIsLoading(false);
       }
@@ -45,14 +45,14 @@ export default function CampaignsPage() {
 
   const handleGenerateReferral = async () => {
     if (!auth.currentUser) return;
-    
+
     setIsGenerating(true);
     try {
       const newReferral = await api.generateReferral(auth.currentUser.uid);
-      setReferrals(prev => [...prev, newReferral]);
+      setReferrals((prev) => [...prev, newReferral]);
     } catch (error) {
-      console.error('Failed to generate referral:', error);
-      alert('Failed to generate referral code. Please try again.');
+      console.error("Failed to generate referral:", error);
+      alert("Failed to generate referral code. Please try again.");
     } finally {
       setIsGenerating(false);
     }
@@ -61,9 +61,9 @@ export default function CampaignsPage() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert('Copied to clipboard!');
+      alert("Copied to clipboard!");
     } catch (error) {
-      console.error('Failed to copy:', error);
+      console.error("Failed to copy:", error);
     }
   };
 
@@ -84,20 +84,20 @@ export default function CampaignsPage() {
   return (
     <div className="min-h-screen bg-bg">
       <Header />
-      
+
       <main className="container mx-auto px-6 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-fg mb-2">Campaigns</h1>
             <p className="text-muted">Manage your referral links and codes</p>
           </div>
-          <Button 
+          <Button
             onClick={handleGenerateReferral}
             disabled={isGenerating}
             className="flex items-center"
           >
             <Plus className="h-4 w-4 mr-2" />
-            {isGenerating ? 'Generating...' : 'Generate New Code'}
+            {isGenerating ? "Generating..." : "Generate New Code"}
           </Button>
         </div>
 
@@ -109,7 +109,7 @@ export default function CampaignsPage() {
                   <CardTitle className="flex items-center justify-between">
                     <span>Referral Code</span>
                     <span className="text-sm font-normal text-muted">
-                      {referral.venture || 'General'}
+                      {referral.venture || "General"}
                     </span>
                   </CardTitle>
                 </CardHeader>
@@ -128,7 +128,8 @@ export default function CampaignsPage() {
                       </Button>
                     </div>
                     <p className="text-sm text-muted">
-                      Created: {new Date(referral.createdAt).toLocaleDateString()}
+                      Created:{" "}
+                      {new Date(referral.createdAt).toLocaleDateString()}
                     </p>
                   </div>
 
@@ -154,7 +155,7 @@ export default function CampaignsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => window.open(referral.link, '_blank')}
+                          onClick={() => window.open(referral.link, "_blank")}
                         >
                           <ExternalLink className="h-4 w-4" />
                         </Button>
@@ -200,7 +201,7 @@ export default function CampaignsPage() {
               </p>
               <Button onClick={handleGenerateReferral} disabled={isGenerating}>
                 <Plus className="h-4 w-4 mr-2" />
-                {isGenerating ? 'Generating...' : 'Generate Your First Code'}
+                {isGenerating ? "Generating..." : "Generate Your First Code"}
               </Button>
             </CardContent>
           </Card>
@@ -220,7 +221,8 @@ export default function CampaignsPage() {
                 <div>
                   <h4 className="font-medium text-fg">Share Your Code</h4>
                   <p className="text-sm text-muted">
-                    Share your referral code or link with your followers on social media
+                    Share your referral code or link with your followers on
+                    social media
                   </p>
                 </div>
               </div>
@@ -231,7 +233,8 @@ export default function CampaignsPage() {
                 <div>
                   <h4 className="font-medium text-fg">Track Usage</h4>
                   <p className="text-sm text-muted">
-                    When someone uses your code, you'll earn cashback on their purchases
+                    When someone uses your code, you'll earn cashback on their
+                    purchases
                   </p>
                 </div>
               </div>

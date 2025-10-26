@@ -16,11 +16,27 @@ body {
 }
 
 /* Custom utility classes */
-.bg-bg { background-color: var(--background); }
-.text-fg { color: var(--foreground); }
-.text-accent { color: var(--accent); }
-.text-muted { color: var(--muted); }
-.bg-accent { background-color: var(--accent); }
-.bg-accent-light { background-color: var(--accent-light); }
-.border-border { border-color: var(--border); }
-.shadow-soft { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
+.bg-bg {
+  background-color: var(--background);
+}
+.text-fg {
+  color: var(--foreground);
+}
+.text-accent {
+  color: var(--accent);
+}
+.text-muted {
+  color: var(--muted);
+}
+.bg-accent {
+  background-color: var(--accent);
+}
+.bg-accent-light {
+  background-color: var(--accent-light);
+}
+.border-border {
+  border-color: var(--border);
+}
+.shadow-soft {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
