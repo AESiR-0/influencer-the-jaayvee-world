@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { LogOut, User } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { auth } from "@/lib/firebaseClient";
 import { Button } from "@/ui/button";
-import { LogOut, User } from "lucide-react";
 
 export default function Header() {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,6 +13,7 @@ export default function Header() {
   const handleLogout = async () => {
     setIsLoading(true);
     try {
+      if (!auth) throw new Error("Firebase not initialized");
       await auth.signOut();
       router.push("/login");
     } catch (error) {

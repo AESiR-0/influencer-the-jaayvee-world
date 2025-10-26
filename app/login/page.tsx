@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
+  RecaptchaVerifier,
   signInWithEmailAndPassword,
   signInWithPhoneNumber,
-  RecaptchaVerifier,
+  type User,
 } from "firebase/auth";
-import { auth } from "@/lib/firebaseClient";
+import { ArrowRight, Mail, Phone } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { auth } from "@/lib/firebaseClient";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
-import { Mail, Phone, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -29,25 +30,23 @@ export default function LoginPage() {
     // Check if user is already logged in
     if (!auth) return;
 
-    const unsubscribe = auth.onAuthStateChanged(
-      async (user: firebase.User | null) => {
-        if (user) {
-          try {
-            await api.verifyToken();
-            router.push("/dashboard");
-          } catch (error) {
-            console.error("Token verification failed:", error);
-          }
+    const unsubscribe = auth.onAuthStateChanged(async (user: User | null) => {
+      if (user) {
+        try {
+          await api.verifyToken();
+          router.push("/dashboard");
+        } catch (error) {
+          console.error("Token verification failed:", error);
         }
-      },
-    );
+      }
+    });
 
     return () => unsubscribe();
   }, [router]);
 
   useEffect(() => {
     // Initialize reCAPTCHA
-    if (typeof window !== "undefined" && !recaptchaVerifier) {
+    if (typeof window !== "undefined" && !recaptchaVerifier && auth) {
       const verifier = new RecaptchaVerifier(auth, "recaptcha-container", {
         size: "invisible",
         callback: () => {
@@ -63,6 +62,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      if (!auth) throw new Error("Firebase not initialized");
       await signInWithEmailAndPassword(auth, email, password);
       await api.verifyToken();
       router.push("/dashboard");
@@ -79,6 +79,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      if (!auth) throw new Error("Firebase not initialized");
       if (!recaptchaVerifier) throw new Error("reCAPTCHA not initialized");
 
       const confirmationResult = await signInWithPhoneNumber(
@@ -265,6 +266,6 @@ export default function LoginPage() {
 // Extend Window interface for TypeScript
 declare global {
   interface Window {
-    confirmationResult: firebase.auth.ConfirmationResult | null;
+    confirmationResult: any;
   }
 }

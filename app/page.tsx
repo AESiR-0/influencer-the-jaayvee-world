@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { auth } from "@/lib/firebaseClient";
+import type { User } from "firebase/auth";
 
 export default function Home() {
   const router = useRouter();
@@ -14,15 +15,13 @@ export default function Home() {
       return;
     }
 
-    const unsubscribe = auth.onAuthStateChanged(
-      (user: firebase.User | null) => {
-        if (user) {
-          router.push("/dashboard");
-        } else {
-          router.push("/login");
-        }
-      },
-    );
+    const unsubscribe = auth.onAuthStateChanged((user: User | null) => {
+      if (user) {
+        router.push("/dashboard");
+      } else {
+        router.push("/login");
+      }
+    });
 
     return () => unsubscribe();
   }, [router]);

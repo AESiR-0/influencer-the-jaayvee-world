@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Copy, ExternalLink, Star, User, Users, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/lib/firebaseClient";
-import { api } from "@/lib/api";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { api } from "@/lib/api";
+import { auth } from "@/lib/firebaseClient";
 import { Button } from "@/ui/button";
-import { User, Wallet, Star, Users, ExternalLink, Copy } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 
 interface ProfileData {
   handle: string;

@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Clock, DollarSign, Share2, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/lib/firebaseClient";
-import { api } from "@/lib/api";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import StatCard from "@/components/StatCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { api } from "@/lib/api";
+import { auth } from "@/lib/firebaseClient";
 import { Button } from "@/ui/button";
-import { DollarSign, Clock, Share2, TrendingUp } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 
 interface Profile {
   handle?: string;
@@ -174,7 +174,9 @@ export default function DashboardPage() {
                     </code>
                   </div>
                   <Button
-                    onClick={() => navigator.clipboard.writeText(referral.code)}
+                    onClick={() =>
+                      navigator.clipboard.writeText(referral.code || "")
+                    }
                     className="w-full"
                   >
                     Copy Referral Code

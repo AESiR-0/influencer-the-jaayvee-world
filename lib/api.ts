@@ -2,6 +2,13 @@ import { auth } from "./firebaseClient";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
+interface SubmissionData {
+  screenshot: string;
+  storyLink: string;
+  amount: number;
+  influencerId: string;
+}
+
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   if (!auth) {
     throw new Error("Firebase not initialized");
@@ -52,7 +59,7 @@ export const api = {
   // Submissions
   getSubmissions: (influencerId: string) =>
     apiRequest(`/influencers/submissions?influencerId=${influencerId}`),
-  uploadSubmission: (data: any) =>
+  uploadSubmission: (data: SubmissionData) =>
     apiRequest("/influencers/submissions", {
       method: "POST",
       body: JSON.stringify(data),

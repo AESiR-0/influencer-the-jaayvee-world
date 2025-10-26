@@ -1,23 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { auth } from "@/lib/firebaseClient";
-import { api } from "@/lib/api";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/lib/firebaseClient";
-import Header from "@/components/Header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
-import { Button } from "@/ui/button";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import {
-  Upload,
-  Link,
-  DollarSign,
   Calendar,
   CheckCircle,
-  XCircle,
   Clock,
+  DollarSign,
+  Link,
+  Upload,
+  XCircle,
 } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Header from "@/components/Header";
+import { api } from "@/lib/api";
+import { auth, storage } from "@/lib/firebaseClient";
+import { Button } from "@/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 
 interface Submission {
   id: string;
@@ -67,9 +67,13 @@ export default function SubmissionsPage() {
   };
 
   const uploadScreenshot = async (file: File): Promise<string> => {
+    if (!storage || !auth?.currentUser) {
+      throw new Error("Firebase storage or auth not initialized");
+    }
+
     const storageRef = ref(
       storage,
-      `submissions/${auth.currentUser?.uid}/${Date.now()}_${file.name}`,
+      `submissions/${auth.currentUser.uid}/${Date.now()}_${file.name}`,
     );
     const snapshot = await uploadBytes(storageRef, file);
     return getDownloadURL(snapshot.ref);
@@ -77,7 +81,7 @@ export default function SubmissionsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth.currentUser || !screenshot) return;
+    if (!auth || !auth.currentUser || !screenshot) return;
 
     setIsUploading(true);
     try {
@@ -169,7 +173,10 @@ export default function SubmissionsPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-fg mb-2">
+                <label
+                  htmlFor="screenshot"
+                  className="block text-sm font-medium text-fg mb-2"
+                >
                   Screenshot of Your Post *
                 </label>
                 <input
@@ -188,12 +195,16 @@ export default function SubmissionsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-fg mb-2">
+                <label
+                  htmlFor="story-link"
+                  className="block text-sm font-medium text-fg mb-2"
+                >
                   Story/Post Link *
                 </label>
                 <div className="relative">
                   <Link className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted" />
                   <input
+                    id="story-link"
                     type="url"
                     value={storyLink}
                     onChange={(e) => setStoryLink(e.target.value)}
@@ -205,12 +216,16 @@ export default function SubmissionsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-fg mb-2">
+                <label
+                  htmlFor="amount"
+                  className="block text-sm font-medium text-fg mb-2"
+                >
                   Amount Spent (Optional)
                 </label>
                 <div className="relative">
                   <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted" />
                   <input
+                    id="amount"
                     type="number"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
@@ -304,9 +319,11 @@ export default function SubmissionsPage() {
                         <p className="text-sm font-medium text-fg mb-2">
                           Screenshot:
                         </p>
-                        <img
+                        <Image
                           src={submission.screenshot}
                           alt="Submission screenshot"
+                          width={300}
+                          height={200}
                           className="max-w-xs rounded-lg border border-border"
                         />
                       </div>

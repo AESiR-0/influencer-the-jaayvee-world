@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Copy, ExternalLink, Plus, QrCode } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { auth } from "@/lib/firebaseClient";
-import { api } from "@/lib/api";
+import { useEffect, useState } from "react";
 import Header from "@/components/Header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { api } from "@/lib/api";
+import { auth } from "@/lib/firebaseClient";
 import { Button } from "@/ui/button";
-import { Copy, Plus, ExternalLink, QrCode } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 
 interface ReferralData {
   code: string;
@@ -44,7 +44,7 @@ export default function CampaignsPage() {
   }, [router]);
 
   const handleGenerateReferral = async () => {
-    if (!auth.currentUser) return;
+    if (!auth || !auth.currentUser) return;
 
     setIsGenerating(true);
     try {
@@ -104,7 +104,7 @@ export default function CampaignsPage() {
         {referrals.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {referrals.map((referral, index) => (
-              <Card key={index}>
+              <Card key={referral.code || `referral-${index}`}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>Referral Code</span>
@@ -135,11 +135,15 @@ export default function CampaignsPage() {
 
                   {referral.link && (
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-fg">
+                      <label
+                        htmlFor={`referral-link-${index}`}
+                        className="text-sm font-medium text-fg"
+                      >
                         Referral Link:
                       </label>
                       <div className="flex items-center space-x-2">
                         <input
+                          id={`referral-link-${index}`}
                           type="text"
                           value={referral.link}
                           readOnly
