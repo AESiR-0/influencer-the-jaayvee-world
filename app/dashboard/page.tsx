@@ -10,11 +10,38 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/ui/card';
 import { Button } from '@/ui/button';
 import { DollarSign, Clock, Share2, TrendingUp } from 'lucide-react';
 
+interface Profile {
+  handle?: string;
+  email?: string;
+  followers?: number;
+  tier?: string;
+}
+
+interface Referral {
+  code?: string;
+  link?: string;
+  venture?: string;
+  createdAt?: string;
+}
+
+interface Submission {
+  id?: string;
+  amount?: number;
+  status?: 'pending' | 'approved' | 'rejected';
+  createdAt?: string;
+}
+
+interface Wallet {
+  balance?: number;
+  totalEarned?: number;
+  pendingAmount?: number;
+}
+
 interface DashboardData {
-  profile: any;
-  referral: any;
-  submissions: any[];
-  wallet: any;
+  profile: Profile;
+  referral: Referral;
+  submissions: Submission[];
+  wallet: Wallet;
 }
 
 export default function DashboardPage() {
@@ -188,7 +215,7 @@ export default function DashboardPage() {
             {submissions.length > 0 ? (
               <div className="space-y-4">
                 {submissions.slice(0, 3).map((submission, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border border-border rounded-xl">
+                  <div key={submission.id || `submission-${index}`} className="flex items-center justify-between p-4 border border-border rounded-xl">
                     <div>
                       <p className="font-medium text-fg">
                         Submission #{submission.id || index + 1}

@@ -227,10 +227,10 @@ export default function LoginPage() {
     </div>
   );
 }
-
 // Extend Window interface for TypeScript
 declare global {
   interface Window {
     confirmationResult: any;
   }
 }
+
