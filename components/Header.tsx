@@ -1,10 +1,11 @@
 "use client";
 
-import { LogOut, User } from "lucide-react";
+import { Calendar, LogOut, Upload, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { auth } from "@/lib/firebaseClient";
+import { authUtils } from "@/lib/auth-utils";
 import { Button } from "@/ui/button";
+import Link from "next/link";
 
 export default function Header() {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,8 +14,8 @@ export default function Header() {
   const handleLogout = async () => {
     setIsLoading(true);
     try {
-      if (!auth) throw new Error("Firebase not initialized");
-      await auth.signOut();
+      // Clear authentication data
+      authUtils.logout();
       router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
@@ -27,11 +28,29 @@ export default function Header() {
     <header className="bg-bg border-b border-border px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-fg">The Jaayvee World</h1>
+          <Link href="/">
+          <h1 className="text-xl font-bold text-fg hover:text-accent transition-colors cursor-pointer">The Jaayvee World</h1>
+          </Link>
           <span className="text-sm text-muted">Influencers Dashboard</span>
         </div>
 
         <div className="flex items-center space-x-4">
+        <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push("/campaigns")}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Campaigns
+          </Button>
+        <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push("/campaigns")}
+          >
+            <Upload className="h-4 w-4 mr-2" />
+              Submissions
+          </Button>
           <Button
             variant="ghost"
             size="sm"

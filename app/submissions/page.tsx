@@ -1,6 +1,5 @@
 "use client";
 
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import {
   Calendar,
   CheckCircle,
@@ -15,7 +14,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { api } from "@/lib/api";
-import { auth, storage } from "@/lib/firebaseClient";
+import { authUtils } from "@/lib/auth-utils";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 
@@ -40,15 +39,18 @@ export default function SubmissionsPage() {
 
   useEffect(() => {
     const fetchSubmissions = async () => {
-      if (!auth || !auth.currentUser) {
+      const user = authUtils.getUser();
+      const influencerProfile = authUtils.getProfile();
+      
+      if (!user || !influencerProfile) {
         router.push("/login");
         return;
       }
 
       try {
         setIsLoading(true);
-        const data = await api.getSubmissions(auth.currentUser.uid);
-        setSubmissions(Array.isArray(data) ? data : []);
+        const response = await api.getSubmissions(influencerProfile.id);
+        setSubmissions(response.data || []);
       } catch (error) {
         console.error("Failed to fetch submissions:", error);
       } finally {
@@ -66,38 +68,38 @@ export default function SubmissionsPage() {
     }
   };
 
-  const uploadScreenshot = async (file: File): Promise<string> => {
-    if (!storage || !auth?.currentUser) {
-      throw new Error("Firebase storage or auth not initialized");
-    }
-
-    const storageRef = ref(
-      storage,
-      `submissions/${auth.currentUser.uid}/${Date.now()}_${file.name}`,
-    );
-    const snapshot = await uploadBytes(storageRef, file);
-    return getDownloadURL(snapshot.ref);
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !auth.currentUser || !screenshot) return;
+    const influencerProfile = authUtils.getProfile();
+    if (!influencerProfile || !screenshot) return;
 
     setIsUploading(true);
     try {
-      // Upload screenshot to Firebase Storage
-      const screenshotUrl = await uploadScreenshot(screenshot);
+      // Convert screenshot to base64
+      const screenshotBase64 = await convertToBase64(screenshot);
 
       // Submit to API
       const submissionData = {
-        screenshot: screenshotUrl,
+        screenshot: screenshotBase64,
         storyLink,
         amount: amount ? parseFloat(amount) : 0,
-        influencerId: auth.currentUser.uid,
+        influencerId: influencerProfile.id,
       };
 
-      const newSubmission = await api.uploadSubmission(submissionData);
-      setSubmissions((prev) => [newSubmission, ...prev]);
+      const response = await api.uploadSubmission(submissionData);
+      
+      // Refresh submissions list
+      const updatedResponse = await api.getSubmissions(influencerProfile.id);
+      setSubmissions(updatedResponse.data || []);
 
       // Reset form
       setScreenshot(null);
@@ -151,10 +153,10 @@ export default function SubmissionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen  bg-bg">
       <Header />
 
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto max-w-7xl px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-fg mb-2">Submissions</h1>
           <p className="text-muted">

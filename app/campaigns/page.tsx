@@ -1,62 +1,95 @@
 "use client";
 
-import { Copy, ExternalLink, Plus, QrCode } from "lucide-react";
+import { Copy, ExternalLink, Share2, Calendar, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
-import { api } from "@/lib/api";
-import { auth } from "@/lib/firebaseClient";
+import ShareModal from "@/components/ShareModal";
+import { api, generateReferralLink } from "@/lib/api";
+import { authUtils } from "@/lib/auth-utils";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 
 interface ReferralData {
+  id: string;
   code: string;
   link: string;
-  venture: string;
+  ventureId: string;
+  clicks: number;
+  conversions: number;
+  isActive: boolean;
   createdAt: string;
+}
+
+interface Event {
+  id: string;
+  title: string;
+  startDate: string;
+  venue: string;
+  venture: {
+    id: string;
+    name: string;
+  };
 }
 
 export default function CampaignsPage() {
   const [referrals, setReferrals] = useState<ReferralData[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [shareModal, setShareModal] = useState<{ isOpen: boolean; link: string; title: string }>({
+    isOpen: false,
+    link: "",
+    title: ""
+  });
   const router = useRouter();
 
   useEffect(() => {
-    const fetchReferrals = async () => {
-      if (!auth || !auth.currentUser) {
+    const fetchData = async () => {
+      const user = authUtils.getUser();
+      const influencerProfile = authUtils.getProfile();
+      
+      if (!user || !influencerProfile) {
         router.push("/login");
         return;
       }
 
       try {
         setIsLoading(true);
-        const data = await api.getReferral(auth.currentUser.uid);
-        setReferrals(Array.isArray(data) ? data : [data].filter(Boolean));
+        
+        // Fetch referrals and events in parallel
+        const [referralsResponse, eventsResponse] = await Promise.all([
+          api.getReferral(influencerProfile.id),
+          api.getEvents()
+        ]);
+        
+        setReferrals(referralsResponse.data || []);
+        
+        // Combine recent and upcoming events
+        const allEvents = [
+          ...(eventsResponse.data?.summary?.recentEvents || []),
+          ...(eventsResponse.data?.summary?.upcomingEvents || [])
+        ];
+        setEvents(allEvents);
+        
       } catch (error) {
-        console.error("Failed to fetch referrals:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchReferrals();
+    fetchData();
   }, [router]);
 
-  const handleGenerateReferral = async () => {
-    if (!auth || !auth.currentUser) return;
 
-    setIsGenerating(true);
-    try {
-      const newReferral = await api.generateReferral(auth.currentUser.uid);
-      setReferrals((prev) => [...prev, newReferral]);
-    } catch (error) {
-      console.error("Failed to generate referral:", error);
-      alert("Failed to generate referral code. Please try again.");
-    } finally {
-      setIsGenerating(false);
-    }
+  const openShareModal = (link: string, title: string) => {
+    setShareModal({
+      isOpen: true,
+      link,
+      title
+    });
   };
+
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -85,132 +118,129 @@ export default function CampaignsPage() {
     <div className="min-h-screen bg-bg">
       <Header />
 
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto max-w-7xl px-6 py-8">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-fg mb-2">Campaigns</h1>
             <p className="text-muted">Manage your referral links and codes</p>
           </div>
-          <Button
-            onClick={handleGenerateReferral}
-            disabled={isGenerating}
-            className="flex items-center"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            {isGenerating ? "Generating..." : "Generate New Code"}
-          </Button>
+        
         </div>
 
-        {referrals.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {referrals.map((referral, index) => (
-              <Card key={referral.code || `referral-${index}`}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Referral Code</span>
-                    <span className="text-sm font-normal text-muted">
-                      {referral.venture || "General"}
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 bg-accent-light rounded-xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <code className="text-accent font-mono text-lg font-bold">
-                        {referral.code}
-                      </code>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => copyToClipboard(referral.code)}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <p className="text-sm text-muted">
-                      Created:{" "}
-                      {new Date(referral.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
-
-                  {referral.link && (
-                    <div className="space-y-2">
-                      <label
-                        htmlFor={`referral-link-${index}`}
-                        className="text-sm font-medium text-fg"
-                      >
-                        Referral Link:
-                      </label>
-                      <div className="flex items-center space-x-2">
-                        <input
-                          id={`referral-link-${index}`}
-                          type="text"
-                          value={referral.link}
-                          readOnly
-                          className="flex-1 px-3 py-2 border border-border rounded-xl bg-bg text-sm"
-                        />
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => copyToClipboard(referral.link)}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => window.open(referral.link, "_blank")}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
+        {/* Events with Referral Links */}
+        {events.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {events.map((event) => {
+              // Find existing referral for this event or create a general one
+              const existingReferral = referrals.find(r => r.link?.includes(`/events/${event.id}`));
+              const referralCode = existingReferral?.code || `INF${event.id.slice(-6).toUpperCase()}`;
+              const referralLink = generateReferralLink(referralCode, `/events/${event.id}`);
+              
+              return (
+                <Card key={event.id}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <span className="flex items-center">
+                        <Calendar className="h-5 w-5 mr-2 text-accent" />
+                        {event.title}
+                      </span>
+                      <span className="text-sm font-normal text-muted">
+                        {event.venture.name}
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* Event Details */}
+                    <div className="p-4 bg-accent-light rounded-xl">
+                      <div className="flex items-center mb-2">
+                        <MapPin className="h-4 w-4 mr-2 text-accent" />
+                        <span className="text-sm text-fg">{event.venue}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-2 text-accent" />
+                        <span className="text-sm text-fg">
+                          {new Date(event.startDate).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
-                  )}
 
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => copyToClipboard(referral.code)}
-                      className="flex-1"
-                    >
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copy Code
-                    </Button>
-                    {referral.link && (
+                    {/* Referral Link */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-fg">
+                        Your Referral Link:
+                      </label>
+                      <div className="font-mono text-sm text-gray-800 bg-gray-100 p-3 rounded-lg break-all">
+                        {referralLink}
+                      </div>
+                    </div>
+
+                    {/* Performance Metrics */}
+                    <div className="grid grid-cols-2 gap-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-accent">
+                          {existingReferral?.clicks || 0}
+                        </div>
+                        <div className="text-xs text-muted">Clicks</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-accent">
+                          {existingReferral?.conversions || 0}
+                        </div>
+                        <div className="text-xs text-muted">Conversions</div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => copyToClipboard(referral.link)}
+                        onClick={() => copyToClipboard(referralCode)}
+                        className="flex-1"
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copy Code
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(referralLink)}
                         className="flex-1"
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
                         Copy Link
                       </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    </div>
+
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => openShareModal(referralLink, `Check out this event: ${event.title}! Use my referral code: ${referralCode}`)}
+                      className="w-full"
+                    >
+                      <Share2 className="h-4 w-4 mr-2" />
+                      Share Event
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         ) : (
-          <Card>
+          <Card className="mb-8">
             <CardContent className="text-center py-12">
-              <QrCode className="h-12 w-12 text-muted mx-auto mb-4" />
+              <Calendar className="h-12 w-12 text-muted mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-fg mb-2">
-                No Referral Codes Yet
+                No Events Available
               </h3>
               <p className="text-muted mb-6">
-                Generate your first referral code to start earning cashback
+                No events are currently available for referral links
               </p>
-              <Button onClick={handleGenerateReferral} disabled={isGenerating}>
-                <Plus className="h-4 w-4 mr-2" />
-                {isGenerating ? "Generating..." : "Generate Your First Code"}
-              </Button>
             </CardContent>
           </Card>
         )}
 
+   
         {/* Instructions */}
         <Card className="mt-8">
           <CardHeader>
@@ -241,22 +271,30 @@ export default function CampaignsPage() {
                     purchases
                   </p>
                 </div>
-              </div>
-              <div className="flex items-start space-x-3">
+              </div>  <div className="flex items-start space-x-3">
                 <div className="w-6 h-6 bg-accent text-white rounded-full flex items-center justify-center text-sm font-bold">
                   3
                 </div>
                 <div>
-                  <h4 className="font-medium text-fg">Upload Proof</h4>
-                  <p className="text-sm text-muted">
-                    Upload screenshots of your posts to get cashback approved
+                  <h4 className="font-medium text-fg">Get paid</h4>
+                    <p className="text-sm text-muted">
+                      When someone uses your code, you get 10% of the total amount spent.
                   </p>
                 </div>
               </div>
+            
             </div>
           </CardContent>
         </Card>
       </main>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={shareModal.isOpen}
+        onClose={() => setShareModal({ isOpen: false, link: "", title: "" })}
+        link={shareModal.link}
+        title={shareModal.title}
+      />
     </div>
   );
 }

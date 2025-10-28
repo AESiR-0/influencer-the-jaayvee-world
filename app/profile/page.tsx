@@ -5,17 +5,27 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import { api } from "@/lib/api";
-import { auth } from "@/lib/firebaseClient";
+import { authUtils } from "@/lib/auth-utils";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 
 interface ProfileData {
-  handle: string;
-  followers: number;
-  tier: string;
+  id: string;
   email: string;
-  phone?: string;
-  joinedAt: string;
+  fullName: string;
+  phone: string;
+  role: string;
+  roleLevel: number;
+}
+
+interface InfluencerProfile {
+  id: string;
+  referralCode: string;
+  tier: string;
+  instagramHandle?: string;
+  youtubeHandle?: string;
+  followersCount: number;
+  totalEarnings: string;
 }
 
 interface WalletData {
@@ -26,28 +36,35 @@ interface WalletData {
 
 export default function ProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [influencerProfile, setInfluencerProfile] = useState<InfluencerProfile | null>(null);
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!auth || !auth.currentUser) {
+      const user = authUtils.getUser();
+      const influencer = authUtils.getProfile() as InfluencerProfile;
+      
+      if (!user || !influencer) {
         router.push("/login");
         return;
       }
 
       try {
         setIsLoading(true);
-        const userId = auth.currentUser.uid;
+        
+        // Get wallet data (if available)
+        try {
+          const walletData = await api.getWallet(user.id);
+          setWallet(walletData.data || { balance: 0, totalEarned: 0, pendingAmount: 0 });
+        } catch (error) {
+          console.log("Wallet API not available, using default values");
+          setWallet({ balance: 0, totalEarned: 0, pendingAmount: 0 });
+        }
 
-        const [profileData, walletData] = await Promise.all([
-          api.getProfile(userId),
-          api.getWallet(userId),
-        ]);
-
-        setProfile(profileData);
-        setWallet(walletData);
+        setProfile(user);
+        setInfluencerProfile(influencer);
       } catch (error) {
         console.error("Failed to fetch profile data:", error);
       } finally {
@@ -103,10 +120,10 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen  bg-bg">
       <Header />
 
-      <main className="container mx-auto px-6 py-8">
+      <main className="container max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-fg mb-2">Profile</h1>
           <p className="text-muted">
@@ -114,7 +131,7 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1  gap-6">
           {/* Profile Information */}
           <div className="lg:col-span-2 space-y-6">
             <Card>
@@ -131,11 +148,17 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold text-fg">
-                      @{profile?.handle || "influencer"}
+                      {profile?.fullName || "Influencer"}
                     </h3>
                     <p className="text-muted">{profile?.email}</p>
                     {profile?.phone && (
                       <p className="text-sm text-muted">{profile.phone}</p>
+                    )}
+                    {influencerProfile?.instagramHandle && (
+                      <p className="text-sm text-muted">{influencerProfile.instagramHandle}</p>
+                    )}
+                    {influencerProfile?.youtubeHandle && (
+                      <p className="text-sm text-muted">{influencerProfile.youtubeHandle}</p>
                     )}
                   </div>
                 </div>
@@ -149,7 +172,7 @@ export default function ProfilePage() {
                       </span>
                     </div>
                     <p className="text-2xl font-bold text-accent">
-                      {profile?.followers?.toLocaleString() || "0"}
+                      {influencerProfile?.followersCount?.toLocaleString() || "0"}
                     </p>
                   </div>
 
@@ -160,23 +183,22 @@ export default function ProfilePage() {
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className="text-2xl">
-                        {getTierIcon(profile?.tier || "")}
+                        {getTierIcon(influencerProfile?.tier || "")}
                       </span>
                       <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${getTierColor(profile?.tier || "")}`}
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${getTierColor(influencerProfile?.tier || "")}`}
                       >
-                        {profile?.tier || "Bronze"}
+                        {influencerProfile?.tier || "Bronze"}
                       </span>
                     </div>
                   </div>
                 </div>
-
                 <div className="pt-4 border-t border-border">
                   <p className="text-sm text-muted">
-                    <strong>Member since:</strong>{" "}
-                    {new Date(
-                      profile?.joinedAt || Date.now(),
-                    ).toLocaleDateString()}
+                    <strong>Referral Code:</strong> {influencerProfile?.referralCode || "N/A"}
+                  </p>
+                  <p className="text-sm text-muted">
+                    <strong>Total Earnings:</strong> ₹{parseFloat(influencerProfile?.totalEarnings || "0").toLocaleString()}
                   </p>
                 </div>
               </CardContent>
@@ -225,83 +247,7 @@ export default function ProfilePage() {
             </Card>
           </div>
 
-          {/* Wallet Information */}
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Wallet className="h-5 w-5 mr-2 text-accent" />
-                  Wallet Balance
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-fg mb-2">
-                    ₹{wallet?.balance?.toLocaleString() || "0"}
-                  </div>
-                  <p className="text-sm text-muted">Available Balance</p>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted">Total Earned</span>
-                    <span className="font-medium text-fg">
-                      ₹{wallet?.totalEarned?.toLocaleString() || "0"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted">Pending</span>
-                    <span className="font-medium text-fg">
-                      ₹{wallet?.pendingAmount?.toLocaleString() || "0"}
-                    </span>
-                  </div>
-                </div>
-
-                <Button
-                  className="w-full"
-                  onClick={() =>
-                    window.open("https://wallet.thejaayveeworld.com", "_blank")
-                  }
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Open Jaayvee Wallet
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => router.push("/campaigns")}
-                >
-                  <Copy className="h-4 w-4 mr-2" />
-                  Manage Referral Codes
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => router.push("/submissions")}
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  Upload Proof
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => router.push("/dashboard")}
-                >
-                  <Star className="h-4 w-4 mr-2" />
-                  View Dashboard
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+       
         </div>
       </main>
     </div>

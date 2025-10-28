@@ -5,43 +5,54 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Header from "@/components/Header";
 import StatCard from "@/components/StatCard";
-import { api } from "@/lib/api";
-import { auth } from "@/lib/firebaseClient";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { api } from "@/lib/api";
+import { authUtils } from "@/lib/auth-utils";
 
 interface Profile {
-  handle?: string;
-  email?: string;
-  followers?: number;
-  tier?: string;
+  id: string;
+  email: string;
+  fullName: string;
+  phone: string;
+  role: string;
+  roleLevel: number;
+}
+
+interface InfluencerProfile {
+  id: string;
+  referralCode: string;
+  tier: string;
+  instagramHandle?: string;
+  youtubeHandle?: string;
+  totalEarnings: string;
 }
 
 interface Referral {
-  code?: string;
-  link?: string;
-  venture?: string;
-  createdAt?: string;
+  id: string;
+  code: string;
+  link: string;
+  ventureId: string;
+  clicks: number;
+  conversions: number;
+  isActive: boolean;
+  createdAt: string;
 }
 
 interface Submission {
-  id?: string;
-  amount?: number;
-  status?: "pending" | "approved" | "rejected";
-  createdAt?: string;
-}
-
-interface Wallet {
-  balance?: number;
-  totalEarned?: number;
-  pendingAmount?: number;
+  id: string;
+  screenshot: string;
+  storyLink: string;
+  amount: number;
+  status: "pending" | "approved" | "rejected";
+  createdAt: string;
 }
 
 interface DashboardData {
   profile: Profile;
-  referral: Referral;
+  influencerProfile: InfluencerProfile;
+  referrals: Referral[];
   submissions: Submission[];
-  wallet: Wallet;
 }
 
 export default function DashboardPage() {
@@ -52,26 +63,35 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!auth || !auth.currentUser) {
-        router.push("/login");
-        return;
-      }
-
       try {
         setIsLoading(true);
-        const userId = auth.currentUser.uid;
+        
+        // Check if user is authenticated
+        const user = authUtils.getUser();
+        const influencerProfile = authUtils.getProfile();
+        
+        if (!user || !influencerProfile) {
+          router.push("/login");
+          return;
+        }
 
-        const [profile, referral, submissions, wallet] = await Promise.all([
-          api.getProfile(userId),
-          api.getReferral(userId),
-          api.getSubmissions(userId),
-          api.getWallet(userId),
+        // Fetch real data from API
+        const [referralsResponse, submissionsResponse] = await Promise.all([
+          api.getReferral(influencerProfile.id),
+          api.getSubmissions(influencerProfile.id)
         ]);
 
-        setData({ profile, referral, submissions, wallet });
-      } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
-        setError("Failed to load dashboard data");
+        const dashboardData: DashboardData = {
+          profile: user,
+          influencerProfile: influencerProfile,
+          referrals: referralsResponse.data || [],
+          submissions: submissionsResponse.data || []
+        };
+
+        setData(dashboardData);
+      } catch (error: any) {
+        console.error("Failed to load dashboard data:", error);
+        setError(error.message || "Failed to load dashboard data");
       } finally {
         setIsLoading(false);
       }
@@ -110,17 +130,12 @@ export default function DashboardPage() {
     );
   }
 
-  const { profile, referral, submissions, wallet } = data;
+  const { profile, influencerProfile, referrals, submissions } = data;
 
   // Calculate stats
-  const totalCashback = submissions
-    .filter((s) => s.status === "approved")
-    .reduce((sum, s) => sum + (s.amount || 0), 0);
-
+  const totalEarnings = parseFloat(influencerProfile.totalEarnings) || 0;
   const pendingCount = submissions.filter((s) => s.status === "pending").length;
-  const approvedCount = submissions.filter(
-    (s) => s.status === "approved",
-  ).length;
+  const approvedCount = submissions.filter((s) => s.status === "approved").length;
 
   return (
     <div className="min-h-screen bg-bg">
@@ -130,15 +145,15 @@ export default function DashboardPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-fg mb-2">Dashboard</h1>
           <p className="text-muted">
-            Welcome back, {profile?.handle || "Influencer"}!
+            Welcome back, {profile?.fullName || "Influencer"}!
           </p>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatCard
-            title="Total Cashback"
-            value={`₹${totalCashback.toLocaleString()}`}
+            title="Total Earnings"
+            value={`₹${totalEarnings.toLocaleString()}`}
             description="Earned from approved posts"
             icon={<DollarSign className="h-4 w-4 text-accent" />}
           />
@@ -166,16 +181,16 @@ export default function DashboardPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {referral?.code ? (
+              {influencerProfile?.referralCode ? (
                 <div className="space-y-4">
                   <div className="p-3 bg-accent-light rounded-xl">
                     <code className="text-accent font-mono text-lg">
-                      {referral.code}
+                      {influencerProfile.referralCode}
                     </code>
                   </div>
                   <Button
                     onClick={() =>
-                      navigator.clipboard.writeText(referral.code || "")
+                      navigator.clipboard.writeText(influencerProfile.referralCode || "")
                     }
                     className="w-full"
                   >
@@ -195,25 +210,6 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Wallet Balance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-4">
-                <div className="text-3xl font-bold text-fg mb-2">
-                  ₹{wallet?.balance?.toLocaleString() || "0"}
-                </div>
-                <p className="text-muted mb-4">Available balance</p>
-                <Button
-                  variant="outline"
-                  onClick={() => router.push("/profile")}
-                >
-                  View Wallet
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Recent Activity */}
@@ -235,7 +231,7 @@ export default function DashboardPage() {
                       </p>
                       <p className="text-sm text-muted">
                         Amount: ₹{submission.amount || "0"} •{" "}
-                        {submission.createdAt || "Recently"}
+                        {new Date(submission.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                     <span

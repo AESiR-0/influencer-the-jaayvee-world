@@ -1,6 +1,4 @@
-import { auth } from "./firebaseClient";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://talaash.thejaayveeworld.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
 
 interface SubmissionData {
   screenshot: string;
@@ -9,29 +7,36 @@ interface SubmissionData {
   influencerId: string;
 }
 
+interface LoginData {
+  email: string;
+  password: string;
+}
+
+interface RegisterData {
+  email: string;
+  password: string;
+  fullName: string;
+  phone: string;
+  instagramHandle?: string;
+  youtubeHandle?: string;
+  instagramFollowers?: number;
+  youtubeSubscribers?: number;
+  tier?: string;
+}
+
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
-  if (!auth) {
-    throw new Error("Firebase not initialized");
-  }
-
-  const user = auth.currentUser;
-  if (!user) {
-    throw new Error("User not authenticated");
-  }
-
-  const token = await user.getIdToken();
-
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
     headers: {
-      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
       ...options.headers,
     },
+    credentials: 'include', // Include cookies for authentication
   });
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.statusText}`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `API request failed: ${response.statusText}`);
   }
 
   return response.json();
@@ -40,31 +45,57 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
 // API functions
 export const api = {
   // Auth
+  login: (data: LoginData) =>
+    apiRequest("/api/influencers/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  register: (data: RegisterData) =>
+    apiRequest("/api/influencers/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
   verifyToken: () =>
-    apiRequest("/influencers/auth/verify-token", { method: "POST" }),
+    apiRequest("/api/influencers/auth/verify-token", { method: "POST" }),
 
   // Profile
   getProfile: (userId: string) =>
-    apiRequest(`/influencers/profile?userId=${userId}`),
+    apiRequest(`/api/influencers/profile?userId=${userId}`),
 
   // Referrals
   getReferral: (influencerId: string) =>
-    apiRequest(`/influencers/referral?influencerId=${influencerId}`),
-  generateReferral: (influencerId: string) =>
-    apiRequest("/influencers/referral", {
+    apiRequest(`/api/influencers/referral?influencerId=${influencerId}`),
+  generateReferral: (influencerId: string, originalUrl?: string) =>
+    apiRequest("/api/influencers/referral", {
       method: "POST",
-      body: JSON.stringify({ influencerId }),
+      body: JSON.stringify({ influencerId, originalUrl }),
     }),
 
   // Submissions
   getSubmissions: (influencerId: string) =>
-    apiRequest(`/influencers/submissions?influencerId=${influencerId}`),
+    apiRequest(`/api/influencers/submissions?influencerId=${influencerId}`),
   uploadSubmission: (data: SubmissionData) =>
-    apiRequest("/influencers/submissions", {
+    apiRequest("/api/influencers/submissions", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   // Wallet
-  getWallet: (userId: string) => apiRequest(`/shared/wallets?userId=${userId}`),
+  getWallet: (userId: string) => apiRequest(`/api/shared/wallets?userId=${userId}`),
+
+  // Events
+  getEvents: () => apiRequest("/api/talaash/events/summary"),
 };
+
+// Helper function to generate referral links (similar to affiliate system)
+export function generateReferralLink(code: string, urlPath?: string | null): string {
+  const baseUrl = process.env.NEXT_PUBLIC_TALAASH_BASE_URL || 'https://talaash.thejaayveeworld.com';
+  
+  if (urlPath) {
+    return `${baseUrl}${urlPath}?ref=${code}`;
+  }
+  
+  return `${baseUrl}/r/${code}`;
+}
