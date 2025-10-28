@@ -23,6 +23,7 @@ interface ReferralData {
 
 interface Event {
   id: string;
+  slug: string;
   title: string;
   startDate: string;
   venue: string;
@@ -132,9 +133,9 @@ export default function CampaignsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {events.map((event) => {
               // Find existing referral for this event or create a general one
-              const existingReferral = referrals.find(r => r.link?.includes(`/events/${event.id}`));
+              const existingReferral = referrals.find(r => r.link?.includes(`/events/${event.slug}`));
               const referralCode = existingReferral?.code || `INF${event.id.slice(-6).toUpperCase()}`;
-              const referralLink = generateReferralLink(referralCode, `/events/${event.id}`);
+              const referralLink = generateReferralLink(referralCode, `/events/${event.slug}`);
               
               return (
                 <Card key={event.id}>

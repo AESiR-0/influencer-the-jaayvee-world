@@ -46,7 +46,7 @@ export default function Header() {
         <Button
             variant="ghost"
             size="sm"
-            onClick={() => router.push("/campaigns")}
+            onClick={() => router.push("/submissions")}
           >
             <Upload className="h-4 w-4 mr-2" />
               Submissions

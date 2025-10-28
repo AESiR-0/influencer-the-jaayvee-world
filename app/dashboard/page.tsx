@@ -141,7 +141,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-bg">
       <Header />
 
-      <main className="container mx-auto px-6 py-8">
+      <main className="container max-w-7xl mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-fg mb-2">Dashboard</h1>
           <p className="text-muted">
@@ -190,11 +190,11 @@ export default function DashboardPage() {
                   </div>
                   <Button
                     onClick={() =>
-                      navigator.clipboard.writeText(influencerProfile.referralCode || "")
+                      router.push(`/campaigns`)
                     }
                     className="w-full"
                   >
-                    Copy Referral Code
+                    Share Referral Code
                   </Button>
                 </div>
               ) : (
