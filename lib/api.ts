@@ -1,6 +1,6 @@
 import { auth } from "./firebaseClient";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://talaash.thejaayveeworld.com';
 
 interface SubmissionData {
   screenshot: string;

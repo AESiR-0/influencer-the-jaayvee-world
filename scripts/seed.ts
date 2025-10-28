@@ -1,6 +1,9 @@
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 
+// API configuration - using jaayvee-world API
+const JAAYVEE_API_BASE_URL = process.env.JAAYVEE_API_BASE_URL || 'https://talaash.thejaayveeworld.com';
+
 // Sample influencer data
 const sampleInfluencers = [
   {
@@ -542,6 +545,61 @@ const seedData = {
   }
 };
 
+// Function to register influencers via jaayvee-world API
+async function registerInfluencers() {
+  console.log('🔐 Registering influencers via jaayvee-world API...');
+  
+  const results = [];
+  
+  for (const influencer of seedData.influencers) {
+    try {
+      console.log(`📝 Registering: ${influencer.fullName} (${influencer.email})`);
+      
+      const response = await fetch(`${JAAYVEE_API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: influencer.email,
+          password: influencer.password,
+          fullName: influencer.fullName,
+          phone: influencer.phone,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log(`✅ Registered: ${influencer.fullName} (${influencer.email})`);
+        console.log(`   User ID: ${data.data.user.id}`);
+        console.log(`   Role: ${data.data.user.role}`);
+        results.push({
+          success: true,
+          influencer,
+          userData: data.data.user,
+        });
+      } else {
+        console.log(`⚠️ Failed: ${influencer.fullName} - ${data.error}`);
+        results.push({
+          success: false,
+          influencer,
+          error: data.error,
+        });
+      }
+    } catch (error) {
+      console.error(`❌ Error registering ${influencer.fullName}:`, error);
+      results.push({
+        success: false,
+        influencer,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
+  
+  return results;
+}
+
 // Function to save seed data
 function saveSeedData() {
   try {
@@ -590,14 +648,43 @@ function displaySummary() {
 }
 
 // Main execution
-function main() {
+async function main() {
   console.log('🚀 Starting influencer seed data generation...');
   
+  // Save seed data to JSON file
   const saved = saveSeedData();
   
   if (saved) {
     displaySummary();
-    console.log('\n✨ Seed data generation completed successfully!');
+    
+    // Register influencers via jaayvee-world API
+    console.log('\n🔐 Registering influencers via jaayvee-world API...');
+    console.log(`📡 API URL: ${JAAYVEE_API_BASE_URL}/api/auth/register`);
+    const registrationResults = await registerInfluencers();
+    
+    // Display registration summary
+    const successful = registrationResults.filter(r => r.success).length;
+    const failed = registrationResults.filter(r => !r.success).length;
+    
+    console.log('\n📊 Registration Summary:');
+    console.log(`   ✅ Successful: ${successful}`);
+    console.log(`   ❌ Failed: ${failed}`);
+    
+    if (failed > 0) {
+      console.log('\n⚠️ Failed Registrations:');
+      registrationResults
+        .filter(r => !r.success)
+        .forEach(r => {
+          console.log(`   - ${r.influencer.fullName}: ${r.error}`);
+        });
+    }
+    
+    // Save registration results
+    const resultsPath = join(process.cwd(), 'registration-results.json');
+    writeFileSync(resultsPath, JSON.stringify(registrationResults, null, 2));
+    console.log('\n💾 Registration results saved to registration-results.json');
+    
+    console.log('\n✨ Seed data generation and registration completed!');
   } else {
     console.log('\n💥 Seed data generation failed!');
     process.exit(1);
@@ -605,8 +692,6 @@ function main() {
 }
 
 // Run the seed script
-if (require.main === module) {
-  main();
-}
+main();
 
 export { seedData, saveSeedData, displaySummary };
