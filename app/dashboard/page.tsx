@@ -153,8 +153,9 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <StatCard
             title="Total Earnings"
-            value={`₹${totalEarnings.toLocaleString()}`}
+            value={`₹${totalEarnings}`}
             description="Earned from approved posts"
+            tooltip="Total = Cashback earnings + Referral earnings"
             icon={<DollarSign className="h-4 w-4 text-accent" />}
           />
           <StatCard
@@ -177,7 +178,7 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center">
                 <TrendingUp className="h-5 w-5 mr-2 text-accent" />
-                Your Referral Code
+                Your Partner Code
               </CardTitle>
             </CardHeader>
             <CardContent>
