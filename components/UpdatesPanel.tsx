@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, AlertCircle, Info, AlertTriangle } from "lucide-react";
+import { Bell, AlertCircle, Info, AlertTriangle, MessageCircle, Linkedin, Facebook, Copy, Check } from "lucide-react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 
@@ -25,6 +25,7 @@ export function UpdatesPanel({ audience, apiBaseUrl = "https://thejaayveeworld.c
   const [updates, setUpdates] = useState<Update[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUpdates = async () => {
@@ -74,6 +75,30 @@ export function UpdatesPanel({ audience, apiBaseUrl = "https://thejaayveeworld.c
         return "bg-blue-100 text-blue-800 border-blue-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
+  const handleShare = (update: Update, platform: 'whatsapp' | 'facebook' | 'linkedin' | 'copy') => {
+    const shareUrl = typeof window !== 'undefined' ? window.location.origin : apiBaseUrl;
+    const updateUrl = `${shareUrl}/updates/${update.id}`;
+    const shareText = `📢 ${update.title}\n\n${update.message}\n\n🔗 ${updateUrl}\n\n#JaayveeWorld #Updates`;
+
+    switch (platform) {
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(updateUrl)}&quote=${encodeURIComponent(`${update.title}: ${update.message}`)}`, '_blank');
+        break;
+      case 'linkedin':
+        window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(updateUrl)}&summary=${encodeURIComponent(`${update.title}: ${update.message}`)}`, '_blank');
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(updateUrl).then(() => {
+          setCopiedId(update.id);
+          setTimeout(() => setCopiedId(null), 2000);
+        });
+        break;
     }
   };
 
