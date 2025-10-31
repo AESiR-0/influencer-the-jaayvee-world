@@ -9,6 +9,7 @@ import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { api } from "@/lib/api";
 import { authUtils } from "@/lib/auth-utils";
+import { UpdatesPanel } from "@/components/UpdatesPanel";
 
 interface Profile {
   id: string;
@@ -211,6 +212,14 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
+        </div>
+
+        {/* Updates Panel */}
+        <div className="mb-8">
+          <UpdatesPanel 
+            audience="influencer" 
+            apiBaseUrl="https://thejaayveeworld.com"
+          />
         </div>
 
         {/* Recent Activity */}
