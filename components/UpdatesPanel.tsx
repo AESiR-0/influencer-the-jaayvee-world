@@ -195,6 +195,40 @@ export function UpdatesPanel({ audience, apiBaseUrl = "https://thejaayveeworld.c
                 <span className="text-xs text-muted">
                   From: {update.createdByEmail}
                 </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleShare(update, 'whatsapp')}
+                    className="p-1.5 hover:bg-green-50 rounded-lg transition-colors"
+                    title="Share on WhatsApp"
+                  >
+                    <MessageCircle className="h-4 w-4 text-green-600" />
+                  </button>
+                  <button
+                    onClick={() => handleShare(update, 'facebook')}
+                    className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Share on Facebook"
+                  >
+                    <Facebook className="h-4 w-4 text-blue-600" />
+                  </button>
+                  <button
+                    onClick={() => handleShare(update, 'linkedin')}
+                    className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Share on LinkedIn"
+                  >
+                    <Linkedin className="h-4 w-4 text-blue-700" />
+                  </button>
+                  <button
+                    onClick={() => handleShare(update, 'copy')}
+                    className="p-1.5 hover:bg-gray-50 rounded-lg transition-colors"
+                    title="Copy link"
+                  >
+                    {copiedId === update.id ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Copy className="h-4 w-4 text-muted" />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
