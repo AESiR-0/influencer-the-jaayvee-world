@@ -57,9 +57,28 @@ export const authUtils = {
   },
 
   // Set authentication data
-  setAuth: (user: InfluencerUser, profile: InfluencerProfile): void => {
+  setAuth: (user: InfluencerUser, profile: InfluencerProfile | null): void => {
     if (typeof window === 'undefined') return;
     localStorage.setItem('influencerUser', JSON.stringify(user));
-    localStorage.setItem('influencerProfile', JSON.stringify(profile));
+    if (profile) {
+      localStorage.setItem('influencerProfile', JSON.stringify(profile));
+    } else {
+      localStorage.removeItem('influencerProfile');
+    }
+    // Store admin flag if user is admin
+    if (user.roleLevel >= 4 || user.role === 'admin' || user.role === 'super_admin') {
+      localStorage.setItem('isAdmin', 'true');
+    } else {
+      localStorage.removeItem('isAdmin');
+    }
+  },
+  
+  // Check if user is admin
+  isAdmin: (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const isAdminFlag = localStorage.getItem('isAdmin');
+    if (isAdminFlag === 'true') return true;
+    const user = authUtils.getUser();
+    return user ? (user.roleLevel >= 4 || user.role === 'admin' || user.role === 'super_admin') : false;
   }
 };

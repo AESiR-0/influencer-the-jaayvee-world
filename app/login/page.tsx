@@ -40,7 +40,13 @@ export default function LoginPage() {
       const response = await api.login({ email, password });
       
       // Store user data using auth utils
-      authUtils.setAuth(response.data.user, response.data.influencer);
+      // Handle admin login (influencer might be null for admins)
+      authUtils.setAuth(response.data.user, response.data.influencer || null);
+      
+      // Store token if provided
+      if (response.data.token) {
+        localStorage.setItem('authToken', response.data.token);
+      }
       
       router.push("/dashboard");
     } catch (error: any) {
@@ -69,7 +75,12 @@ export default function LoginPage() {
       });
       
       // Store user data using auth utils
-      authUtils.setAuth(response.data.user, response.data.influencer);
+      authUtils.setAuth(response.data.user, response.data.influencer || null);
+      
+      // Store token if provided
+      if (response.data.token) {
+        localStorage.setItem('authToken', response.data.token);
+      }
       
       router.push("/dashboard");
     } catch (error: any) {
@@ -139,14 +150,14 @@ export default function LoginPage() {
                     Password
                   </label>
                   <div className="relative">
-                    <input
+                  <input
                       id="login-password"
                       type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                       className="w-full px-3 py-2 pr-10 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent"
-                      required
-                    />
+                    required
+                  />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
@@ -199,14 +210,14 @@ export default function LoginPage() {
                     Password
                   </label>
                   <div className="relative">
-                    <input
+                  <input
                       id="register-password"
                       type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                       className="w-full px-3 py-2 pr-10 border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-accent"
-                      required
-                    />
+                    required
+                  />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
