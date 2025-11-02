@@ -54,10 +54,12 @@ export const authUtils = {
     if (typeof window === 'undefined') return;
     localStorage.removeItem('influencerUser');
     localStorage.removeItem('influencerProfile');
+    localStorage.removeItem('isAdmin');
+    localStorage.removeItem('influencerAuthToken');
   },
 
   // Set authentication data
-  setAuth: (user: InfluencerUser, profile: InfluencerProfile | null): void => {
+  setAuth: (user: InfluencerUser, profile: InfluencerProfile | null, isAdmin?: boolean): void => {
     if (typeof window === 'undefined') return;
     localStorage.setItem('influencerUser', JSON.stringify(user));
     if (profile) {
@@ -65,12 +67,25 @@ export const authUtils = {
     } else {
       localStorage.removeItem('influencerProfile');
     }
-    // Store admin flag if user is admin
-    if (user.roleLevel >= 4 || user.role === 'admin' || user.role === 'super_admin') {
+    // Store admin flag - use explicit isAdmin parameter, fallback to role check
+    const userIsAdmin = isAdmin !== undefined 
+      ? isAdmin 
+      : (user.roleLevel >= 4 || user.role === 'admin' || user.role === 'super_admin');
+    
+    if (userIsAdmin) {
       localStorage.setItem('isAdmin', 'true');
     } else {
       localStorage.removeItem('isAdmin');
     }
+  },
+  
+  // Get session for API calls (returns user with token)
+  getSession: (): { user: InfluencerUser; profile: InfluencerProfile | null; isAdmin: boolean } | null => {
+    const user = authUtils.getUser();
+    if (!user) return null;
+    const profile = authUtils.getProfile();
+    const isAdmin = authUtils.isAdmin();
+    return { user, profile, isAdmin };
   },
   
   // Check if user is admin

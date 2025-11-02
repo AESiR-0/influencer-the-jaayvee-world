@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://talaash.thejaayveeworld.com';
 
 interface SubmissionData {
   screenshot: string;
@@ -25,12 +25,22 @@ interface RegisterData {
 }
 
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
+  // Get auth token from localStorage
+  const token = typeof window !== 'undefined' ? localStorage.getItem('influencerAuthToken') : null;
+  
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...options.headers,
+  };
+  
+  // Add authorization header if token exists
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
+    headers,
     credentials: 'include', // Include cookies for authentication
   });
 

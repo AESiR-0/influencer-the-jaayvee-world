@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, LogOut, Upload, User } from "lucide-react";
+import { Calendar, LogOut, Upload, User, Wallet } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authUtils } from "@/lib/auth-utils";
@@ -50,6 +50,14 @@ export default function Header() {
           >
             <Upload className="h-4 w-4 mr-2" />
               Submissions
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push("/wallet")}
+          >
+            <Wallet className="h-4 w-4 mr-2" />
+            Wallet
           </Button>
           <Button
             variant="ghost"

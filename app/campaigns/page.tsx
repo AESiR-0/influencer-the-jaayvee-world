@@ -48,8 +48,15 @@ export default function CampaignsPage() {
     const fetchData = async () => {
       const user = authUtils.getUser();
       const influencerProfile = authUtils.getProfile();
+      const isAdmin = authUtils.isAdmin();
       
-      if (!user || !influencerProfile) {
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+
+      // Admins can access even without influencer profile (can view events but no referrals)
+      if (!influencerProfile && !isAdmin) {
         router.push("/login");
         return;
       }
@@ -57,11 +64,17 @@ export default function CampaignsPage() {
       try {
         setIsLoading(true);
         
-        // Fetch referrals and events in parallel
-        const [referralsResponse, eventsResponse] = await Promise.all([
-          api.getReferral(influencerProfile.id),
-          api.getEvents()
-        ]);
+        // Fetch referrals (only if influencer profile exists) and events in parallel
+        const promises: Promise<any>[] = [api.getEvents()];
+        
+        if (influencerProfile && !isAdmin) {
+          promises.push(api.getReferral(influencerProfile.id));
+        } else {
+          // For admins, create a resolved promise with empty array
+          promises.push(Promise.resolve({ data: [] }));
+        }
+        
+        const [eventsResponse, referralsResponse] = await Promise.all(promises);
         
         setReferrals(referralsResponse.data || []);
         

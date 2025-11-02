@@ -41,11 +41,15 @@ export default function LoginPage() {
       
       // Store user data using auth utils
       // Handle admin login (influencer might be null for admins)
-      authUtils.setAuth(response.data.user, response.data.influencer || null);
+      const user = response.data.user;
+      const influencer = response.data.influencer || null;
+      const isAdmin = response.data.isAdmin || false;
+      
+      authUtils.setAuth(user, influencer, isAdmin);
       
       // Store token if provided
       if (response.data.token) {
-        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('influencerAuthToken', response.data.token);
       }
       
       router.push("/dashboard");
@@ -75,11 +79,15 @@ export default function LoginPage() {
       });
       
       // Store user data using auth utils
-      authUtils.setAuth(response.data.user, response.data.influencer || null);
+      const user = response.data.user;
+      const influencer = response.data.influencer || null;
+      const isAdmin = false; // New registrations are not admins
+      
+      authUtils.setAuth(user, influencer, isAdmin);
       
       // Store token if provided
       if (response.data.token) {
-        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('influencerAuthToken', response.data.token);
       }
       
       router.push("/dashboard");

@@ -41,15 +41,28 @@ export default function SubmissionsPage() {
     const fetchSubmissions = async () => {
       const user = authUtils.getUser();
       const influencerProfile = authUtils.getProfile();
+      const isAdmin = authUtils.isAdmin();
       
-      if (!user || !influencerProfile) {
+      if (!user) {
         router.push("/login");
+        return;
+      }
+
+      // Admins can access even without influencer profile (show empty state)
+      if (!influencerProfile && !isAdmin) {
+        router.push("/login");
+        return;
+      }
+
+      // If admin without influencer profile, show empty list
+      if (isAdmin && !influencerProfile) {
+        setSubmissions([]);
         return;
       }
 
       try {
         setIsLoading(true);
-        const response = await api.getSubmissions(influencerProfile.id);
+        const response = await api.getSubmissions(influencerProfile!.id);
         setSubmissions(response.data || []);
       } catch (error) {
         console.error("Failed to fetch submissions:", error);
@@ -80,7 +93,15 @@ export default function SubmissionsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const influencerProfile = authUtils.getProfile();
-    if (!influencerProfile || !screenshot) return;
+    const isAdmin = authUtils.isAdmin();
+    
+    // Admins cannot submit (no influencer profile)
+    if (!influencerProfile || !screenshot || isAdmin) {
+      if (isAdmin) {
+        alert("Admins cannot submit posts. Please use an influencer account.");
+      }
+      return;
+    }
 
     setIsUploading(true);
     try {

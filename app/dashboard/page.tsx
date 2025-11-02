@@ -70,16 +70,35 @@ export default function DashboardPage() {
         // Check if user is authenticated
         const user = authUtils.getUser();
         const influencerProfile = authUtils.getProfile();
+        const isAdmin = authUtils.isAdmin();
         
-        if (!user || !influencerProfile) {
+        if (!user) {
           router.push("/login");
           return;
         }
 
-        // Fetch real data from API
+        // Admins can access dashboard even without influencer profile
+        if (!influencerProfile && !isAdmin) {
+          router.push("/login");
+          return;
+        }
+
+        // For admins without influencer profile, show limited dashboard
+        if (isAdmin && !influencerProfile) {
+          const dashboardData: DashboardData = {
+            profile: user,
+            influencerProfile: null,
+            referrals: [],
+            submissions: []
+          };
+          setData(dashboardData);
+          return;
+        }
+
+        // Fetch real data from API (only if influencer profile exists)
         const [referralsResponse, submissionsResponse] = await Promise.all([
-          api.getReferral(influencerProfile.id),
-          api.getSubmissions(influencerProfile.id)
+          api.getReferral(influencerProfile!.id),
+          api.getSubmissions(influencerProfile!.id)
         ]);
 
         const dashboardData: DashboardData = {
@@ -132,9 +151,10 @@ export default function DashboardPage() {
   }
 
   const { profile, influencerProfile, referrals, submissions } = data;
+  const isAdmin = authUtils.isAdmin();
 
-  // Calculate stats
-  const totalEarnings = parseFloat(influencerProfile.totalEarnings) || 0;
+  // Calculate stats (handle null influencerProfile for admins)
+  const totalEarnings = influencerProfile ? parseFloat(influencerProfile.totalEarnings) || 0 : 0;
   const pendingCount = submissions.filter((s) => s.status === "pending").length;
   const approvedCount = submissions.filter((s) => s.status === "approved").length;
 
@@ -146,7 +166,12 @@ export default function DashboardPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-fg mb-2">Dashboard</h1>
           <p className="text-muted">
-            Welcome back, {profile?.fullName || "Influencer"}!
+            Welcome back, {profile?.fullName || "User"}!
+            {isAdmin && !influencerProfile && (
+              <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                Admin Mode
+              </span>
+            )}
           </p>
         </div>
 
