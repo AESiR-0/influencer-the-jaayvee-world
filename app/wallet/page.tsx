@@ -35,11 +35,11 @@ export default function WalletPage() {
     const loadData = async () => {
       try {
         const session = authUtils.getSession();
-        if (!session || !session.id) {
+        if (!session || !session.user) {
           throw new Error('Not authenticated');
         }
-        setUser(session);
-        await fetchWalletData(session.id);
+        setUser(session.user);
+        await fetchWalletData(session.user.id);
       } catch (err: any) {
         setError(err.message || 'Failed to load wallet');
         setLoading(false);
@@ -54,7 +54,7 @@ export default function WalletPage() {
       setError(null);
       
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://talaash.thejaayveeworld.com';
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('influencerAuthToken');
       
       const response = await fetch(`${API_BASE_URL}/api/influencers/wallet`, {
         headers: {

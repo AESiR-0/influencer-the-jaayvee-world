@@ -51,7 +51,7 @@ interface Submission {
 
 interface DashboardData {
   profile: Profile;
-  influencerProfile: InfluencerProfile;
+  influencerProfile: InfluencerProfile | null;
   referrals: Referral[];
   submissions: Submission[];
 }
@@ -157,6 +157,34 @@ export default function DashboardPage() {
   const totalEarnings = influencerProfile ? parseFloat(influencerProfile.totalEarnings) || 0 : 0;
   const pendingCount = submissions.filter((s) => s.status === "pending").length;
   const approvedCount = submissions.filter((s) => s.status === "approved").length;
+
+  // Show admin message if no influencer profile
+  if (isAdmin && !influencerProfile) {
+    return (
+      <div className="min-h-screen bg-bg">
+        <Header />
+        <main className="container max-w-7xl mx-auto px-6 py-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-fg mb-2">Dashboard</h1>
+            <p className="text-muted">
+              Welcome back, {profile?.fullName || "Admin"}!
+              <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                Admin Mode
+              </span>
+            </p>
+          </div>
+          <div className="glass-card p-8 text-center">
+            <p className="text-fg text-lg mb-4">
+              You are logged in as an admin.
+            </p>
+            <p className="text-muted">
+              Admin accounts do not have influencer profiles. Use an influencer account to access influencer-specific features.
+            </p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-bg">

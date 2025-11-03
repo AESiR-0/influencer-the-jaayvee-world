@@ -28,9 +28,9 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   // Get auth token from localStorage
   const token = typeof window !== 'undefined' ? localStorage.getItem('influencerAuthToken') : null;
   
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...options.headers,
+    ...(options.headers as Record<string, string> || {}),
   };
   
   // Add authorization header if token exists
@@ -40,7 +40,7 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     ...options,
-    headers,
+    headers: headers as HeadersInit,
     credentials: 'include', // Include cookies for authentication
   });
 
