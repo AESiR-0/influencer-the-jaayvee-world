@@ -180,6 +180,14 @@ export default function LoginPage() {
                     </button>
                   </div>
                 </div>
+                <div className="text-right">
+                  <a 
+                    href="https://thejaayveeworld.com/auth/forgot-password" 
+                    className="text-sm text-purple-600 hover:text-purple-500"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Signing in..." : "Sign In"}
                   <ArrowRight className="h-4 w-4 ml-2" />

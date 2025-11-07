@@ -31,15 +31,29 @@ export function UpdatesPanel({ audience, apiBaseUrl = "https://thejaayveeworld.c
     const fetchUpdates = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${apiBaseUrl}/api/updates?audience=${audience}`);
+        setError(null);
+        
+        // Add CORS headers if needed
+        const response = await fetch(`${apiBaseUrl}/api/updates?audience=${audience}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          // Add credentials if needed for cross-origin
+          credentials: 'omit',
+        });
         
         if (!response.ok) {
-          throw new Error("Failed to fetch updates");
+          const errorText = await response.text();
+          console.error("Failed to fetch updates:", response.status, errorText);
+          throw new Error(`Failed to fetch updates: ${response.status}`);
         }
 
         const data = await response.json();
         if (data.success) {
           setUpdates(data.data || []);
+        } else {
+          throw new Error(data.error || "Failed to load updates");
         }
       } catch (err: any) {
         console.error("Error fetching updates:", err);
