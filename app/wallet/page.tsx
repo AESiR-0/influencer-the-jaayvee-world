@@ -5,6 +5,7 @@ import { Wallet, TrendingUp, DollarSign, History, Award, ArrowUpRight, ArrowDown
 import Header from "@/components/Header";
 import { api } from "@/lib/api";
 import { authUtils } from "@/lib/auth-utils";
+import TierTimelineModal from "@/components/tier-timeline-modal";
 
 interface WalletData {
   wallet: {
@@ -15,6 +16,20 @@ interface WalletData {
     totalEarnings: string;
     totalReferrals: number;
     tier?: string;
+    currentCommissionRate?: number;
+    pendingEarnings?: string;
+    tierProgress?: {
+      current: number;
+      next: number | null;
+      progress: number;
+    };
+    allTiers?: Array<{
+      tier: string;
+      commissionRate: number;
+      minReferrals: number;
+      maxReferrals: number | null;
+      isCurrent: boolean;
+    }>;
   };
   transactions: Array<{
     id: string;
@@ -30,6 +45,7 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [showTierModal, setShowTierModal] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -216,7 +232,10 @@ export default function WalletPage() {
           </div>
 
           {/* Average per Referral Card */}
-          <div className="card p-5 md:p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">
+          <div 
+            className="card p-5 md:p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 cursor-pointer"
+            onClick={() => setShowTierModal(true)}
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm md:text-base font-semibold text-gray-700">Avg per Referral</h3>
               <div className="bg-purple-100 rounded-lg p-2">
@@ -229,7 +248,18 @@ export default function WalletPage() {
                 maximumFractionDigits: 2
               })}
             </p>
-            <p className="text-xs md:text-sm text-gray-500">Per referral average</p>
+            <p className="text-xs md:text-sm text-gray-500">
+              {walletData.earnings.currentCommissionRate ? `${walletData.earnings.currentCommissionRate}% commission rate` : 'Per referral average'}
+            </p>
+            {walletData.earnings.pendingEarnings && parseFloat(walletData.earnings.pendingEarnings) > 0 && (
+              <p className="text-xs text-yellow-600 mt-1 font-medium">
+                ₹{parseFloat(walletData.earnings.pendingEarnings).toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })} pending
+              </p>
+            )}
+            <p className="text-xs text-purple-600 mt-2 font-medium">Click to view tier progression →</p>
           </div>
 
           {/* Tier Card */}
@@ -356,6 +386,16 @@ export default function WalletPage() {
             </div>
           )}
         </div>
+
+        {/* Tier Timeline Modal */}
+        {walletData && (
+          <TierTimelineModal
+            isOpen={showTierModal}
+            onClose={() => setShowTierModal(false)}
+            currentTier={(walletData.earnings.tier || 'Hustler') as any}
+            currentReferrals={walletData.earnings.totalReferrals}
+          />
+        )}
       </div>
     </>
   );
