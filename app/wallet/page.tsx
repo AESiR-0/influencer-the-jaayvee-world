@@ -38,6 +38,7 @@ interface WalletData {
     reference: string | null;
     createdAt: Date | string;
   }>;
+  partnerCode?: string | null;
 }
 
 export default function WalletPage() {
@@ -63,6 +64,13 @@ export default function WalletPage() {
     };
     loadData();
   }, []);
+
+  // Store partner code in cookie if available
+  useEffect(() => {
+    if (walletData?.partnerCode && typeof window !== 'undefined') {
+      document.cookie = `partnerCode=${walletData.partnerCode}; path=/; max-age=${365 * 24 * 60 * 60}`; // 1 year
+    }
+  }, [walletData?.partnerCode]);
 
   const fetchWalletData = async (userId: string) => {
     try {
@@ -171,6 +179,32 @@ export default function WalletPage() {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Wallet & Earnings</h1>
           <p className="text-gray-600">Manage your earnings and track your influencer performance</p>
         </div>
+
+        {/* Partner Code Display */}
+        {walletData?.partnerCode && (
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-5 md:p-6 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Partner Code</h2>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+              <input
+                type="text"
+                value={walletData.partnerCode}
+                disabled
+                readOnly
+                className="flex-1 px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 font-mono"
+              />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(walletData.partnerCode!);
+                  alert('Partner code copied to clipboard!');
+                }}
+                className="px-4 py-2 bg-primary-accent text-white rounded-lg hover:bg-primary-accent/90 transition-colors whitespace-nowrap"
+              >
+                Copy
+              </button>
+            </div>
+            <p className="text-sm text-gray-500 mt-2">This is the referral code used when you signed up</p>
+          </div>
+        )}
 
         {/* Main Wallet Balance Card - Hero Section */}
         <div className="bg-gradient-to-br from-primary-accent via-purple-600 to-pink-600 rounded-2xl shadow-2xl p-6 md:p-8 mb-6 text-white relative overflow-hidden">

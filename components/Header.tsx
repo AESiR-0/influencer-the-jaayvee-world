@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, LogOut, Upload, User, Wallet } from "lucide-react";
+import { Calendar, LogOut, Upload, User, Wallet, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authUtils } from "@/lib/auth-utils";
@@ -66,6 +66,14 @@ export default function Header() {
           >
             <User className="h-4 w-4 mr-2" />
             Profile
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => window.open("https://thejaayveeworld.com", "_blank")}
+          >
+            <ArrowRight className="h-4 w-4 mr-2" />
+            Main Site
           </Button>
           <Button
             variant="outline"
