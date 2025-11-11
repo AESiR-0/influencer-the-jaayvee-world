@@ -21,7 +21,7 @@ interface UpdatesPanelProps {
   apiBaseUrl?: string;
 }
 
-export function UpdatesPanel({ audience, apiBaseUrl = "https://thejaayveeworld.com" }: UpdatesPanelProps) {
+export function UpdatesPanel({ audience, apiBaseUrl = "https://talaash.thejaayveeworld.com" }: UpdatesPanelProps) {
   const [updates, setUpdates] = useState<Update[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
