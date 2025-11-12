@@ -136,7 +136,7 @@ export default function Header() {
             
             {/* Role Switcher Dropdown */}
             {showRoleSwitcher && (
-              <div className="absolute bottom-full right-0 mb-2 bg-bg border border-border rounded-lg shadow-lg overflow-hidden z-50 min-w-[200px]">
+              <div className="absolute top-full right-0 mt-2 bg-bg border border-border rounded-lg shadow-lg overflow-hidden z-50 min-w-[200px]">
                 {roles.map((role) => {
                   const Icon = role.icon;
                   return (
