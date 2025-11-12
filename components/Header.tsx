@@ -122,17 +122,17 @@ export default function Header() {
           </Button>
           {/* Role Switcher */}
           <div className="relative role-switcher-container">
-            <Button
-              variant="ghost"
-              size="sm"
+          <Button
+            variant="ghost"
+            size="sm"
               onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
-            >
+          >
               <UserCircle className="h-4 w-4 mr-2" />
               Switch Role
               <ChevronDown 
                 className={`h-4 w-4 ml-2 transition-transform duration-200 ${showRoleSwitcher ? 'rotate-180' : ''}`}
               />
-            </Button>
+          </Button>
             
             {/* Role Switcher Dropdown */}
             {showRoleSwitcher && (
