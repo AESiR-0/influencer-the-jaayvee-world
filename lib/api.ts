@@ -77,6 +77,8 @@ export const api = {
   // Referrals
   getReferral: (influencerId: string) =>
     apiRequest(`/api/influencers/referral?influencerId=${influencerId}`),
+  getReferralBySlug: (slug: string) =>
+    apiRequest(`/api/influencers/referral?slug=${slug}`),
   generateReferral: (influencerId: string, originalUrl?: string) =>
     apiRequest("/api/influencers/referral", {
       method: "POST",

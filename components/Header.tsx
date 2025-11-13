@@ -21,7 +21,7 @@ export default function Header() {
       current: true
     },
     {
-      name: 'Staff Portal',
+      name: 'Team Portal',
       url: 'https://staff.thejaayveeworld.com',
       icon: Shield,
       current: false
