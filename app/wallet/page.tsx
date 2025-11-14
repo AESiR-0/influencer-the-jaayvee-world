@@ -298,7 +298,10 @@ export default function WalletPage() {
 
           {/* Tier Card */}
           {walletData.earnings.tier ? (
-            <div className="card p-5 md:p-6 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-yellow-200">
+            <div 
+              className="card p-5 md:p-6 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-yellow-200 cursor-pointer"
+              onClick={() => setShowTierModal(true)}
+            >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm md:text-base font-semibold text-gray-700">Influencer Tier</h3>
                 <div className="bg-yellow-100 rounded-lg p-2">
@@ -309,9 +312,13 @@ export default function WalletPage() {
                 {walletData.earnings.tier}
               </p>
               <p className="text-xs md:text-sm text-gray-500">Your current tier</p>
+              <p className="text-xs text-purple-600 mt-2 font-medium">Click to view tier system →</p>
             </div>
           ) : (
-            <div className="card p-5 md:p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">
+            <div 
+              className="card p-5 md:p-6 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 cursor-pointer"
+              onClick={() => setShowTierModal(true)}
+            >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm md:text-base font-semibold text-gray-700">Tier</h3>
                 <div className="bg-gray-100 rounded-lg p-2">
@@ -320,6 +327,7 @@ export default function WalletPage() {
               </div>
               <p className="text-2xl md:text-3xl font-bold text-gray-400 mb-1">-</p>
               <p className="text-xs md:text-sm text-gray-500">No tier assigned</p>
+              <p className="text-xs text-purple-600 mt-2 font-medium">Click to view tier system →</p>
             </div>
           )}
         </div>

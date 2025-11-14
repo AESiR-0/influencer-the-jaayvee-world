@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 import { authUtils } from "@/lib/auth-utils";
 import { Button } from "@/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import TierTimelineModal from "@/components/tier-timeline-modal";
 
 interface ProfileData {
   id: string;
@@ -39,6 +40,8 @@ export default function ProfilePage() {
   const [influencerProfile, setInfluencerProfile] = useState<InfluencerProfile | null>(null);
   const [wallet, setWallet] = useState<WalletData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showTierModal, setShowTierModal] = useState(false);
+  const [totalReferrals, setTotalReferrals] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
@@ -56,8 +59,31 @@ export default function ProfilePage() {
         
         // Get wallet data (if available)
         try {
-          const walletData = await api.getWallet(user.id);
-          setWallet(walletData.data || { balance: 0, totalEarned: 0, pendingAmount: 0 });
+          const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://talaash.thejaayveeworld.com';
+          const token = localStorage.getItem('influencerAuthToken');
+          
+          const walletResponse = await fetch(`${API_BASE_URL}/api/influencers/wallet`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          });
+
+          if (walletResponse.ok) {
+            const walletResult = await walletResponse.json();
+            if (walletResult.success && walletResult.data) {
+              setWallet({
+                balance: walletResult.data.wallet?.balance || 0,
+                totalEarned: parseFloat(walletResult.data.earnings?.totalEarnings || '0'),
+                pendingAmount: parseFloat(walletResult.data.earnings?.pendingEarnings || '0'),
+              });
+              // Get total referrals for tier modal
+              setTotalReferrals(walletResult.data.earnings?.totalReferrals || 0);
+            }
+          } else {
+            setWallet({ balance: 0, totalEarned: 0, pendingAmount: 0 });
+          }
         } catch (error) {
           console.log("Wallet API not available, using default values");
           setWallet({ balance: 0, totalEarned: 0, pendingAmount: 0 });
@@ -176,7 +202,11 @@ export default function ProfilePage() {
                     </p>
                   </div>
 
-                  <div className="p-4 bg-accent-light rounded-xl">
+                  <div 
+                    className="p-4 bg-accent-light rounded-xl cursor-pointer hover:bg-accent-light/80 transition-colors"
+                    onClick={() => setShowTierModal(true)}
+                    title="Click to view tier system"
+                  >
                     <div className="flex items-center space-x-2 mb-2">
                       <Star className="h-4 w-4 text-accent" />
                       <span className="text-sm font-medium text-fg">Tier</span>
@@ -191,6 +221,7 @@ export default function ProfilePage() {
                         {influencerProfile?.tier || "Bronze"}
                       </span>
                     </div>
+                    <p className="text-xs text-purple-600 mt-2 font-medium">Click to view tier system →</p>
                   </div>
                 </div>
                 <div className="pt-4 border-t border-border">
@@ -250,6 +281,16 @@ export default function ProfilePage() {
        
         </div>
       </main>
+
+      {/* Tier Timeline Modal */}
+      {influencerProfile && (
+        <TierTimelineModal
+          isOpen={showTierModal}
+          onClose={() => setShowTierModal(false)}
+          currentTier={(influencerProfile.tier || 'Hustler') as any}
+          currentReferrals={totalReferrals}
+        />
+      )}
     </div>
   );
 }
